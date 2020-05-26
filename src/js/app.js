@@ -1,5 +1,9 @@
-'use strict'
+import './desktop.js'
 
-import Desktop from './desktop.js'
+window.addEventListener('load', () => {
+  initUI()
+})
 
-Desktop()
+function initUI () {
+  console.log('hej')
+}

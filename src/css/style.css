@@ -3,7 +3,7 @@ html, body, div, header, nav, main, section, footer{
 	padding: 0;
 }
 
-html {
+html, body {
 	width: 100%;
 	height: 100%;
 }
@@ -12,5 +12,6 @@ html {
 Basic styling
 */
 body {
-    background-image: url('../image/Beach.jpg');
+	
+    /*background-image: url('../image/Beach.jpg');*/
 }
