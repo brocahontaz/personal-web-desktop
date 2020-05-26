@@ -1,11 +1,17 @@
 const template = document.createElement('template')
 template.innerHTML = `
 <style>
-
+div#menu {
+    position: fixed;
+    bottom: 0px;
+    height: 50px;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1;
+}
 </style>
 <div id="menu">
-asdasd
-<h1></h1>
+<slot></slot>
 </div>
 `
 
@@ -14,6 +20,7 @@ export default class DesktopMenu extends window.HTMLElement {
     super()
     this.attachShadow({ mode: 'open' })
     this.shadowRoot.appendChild(template.content.cloneNode(true))
-    this.shadowRoot.querySelector('h1').innerText = this.getAttribute('name')
   }
 }
+
+window.customElements.define('desktop-menu', DesktopMenu)
