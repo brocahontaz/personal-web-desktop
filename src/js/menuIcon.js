@@ -1,22 +1,31 @@
 const template = document.createElement('template')
 template.innerHTML = `
 <style>
-div#icon {
-    float: left;
-    width: 40px;
-    height: 40px;
+div {
+    width: 50px;
+    height: 50px;
+    /*border-radius: 4px;*/
+    /*background-color: white;*/
+    margin-right: 5px;
+    cursor: pointer;
+}
+
+div:hover {
+    background: rgba(255,255,255,0.5);
+
 }
 img {
-    width: 30px;
-    height: 30px;
-}
-slot {
-    width: 30px;
-    height: 30px;
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    display: block;
+    margin: 0 auto;
 }
 </style>
-<div id="icon">
-<slot></slot>
+<div>
+<img>
 </div>
 `
 
@@ -25,6 +34,20 @@ export default class MenuIcon extends window.HTMLElement {
     super()
     this.attachShadow({ mode: 'open' })
     this.shadowRoot.appendChild(template.content.cloneNode(true))
+    this.shadowRoot.querySelector('img').setAttribute('src', this.getAttribute('src'))
+  }
+
+  connectedCallback () {
+    this.addEventListener('click', () => this.openWindow())
+  }
+
+  disconnectedCallback () {
+    this.removeEventListener()
+  }
+
+  openWindow () {
+    console.log('HEJ')
+    document.querySelector('desktop-canvas').addWindow('tet')
   }
 }
 
