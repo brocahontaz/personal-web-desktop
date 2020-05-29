@@ -1,7 +1,7 @@
-import './desktop.js'
+import './desktopCanvas.js'
 import './desktopMenu.js'
 import './menuIcon.js'
-import './window.js'
+import './windowHandler.js'
 
 window.addEventListener('load', () => {
   initUI()

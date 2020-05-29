@@ -24,6 +24,7 @@ asdasd
 `
 
 let windowID = 0
+let jumps = 0
 
 export default class Desktop extends window.HTMLElement {
   constructor () {
@@ -35,9 +36,10 @@ export default class Desktop extends window.HTMLElement {
 
   addWindow () {
     windowID++
-    const window = document.createElement('desktop-window')
-    window.setId(windowID)
-    window.jump()
+    jumps++
+    const window = document.createElement('window-handler')
+    window.setId = windowID
+    window.jump(jumps)
     this.shadowRoot.querySelector('div').appendChild(window)
   }
 
