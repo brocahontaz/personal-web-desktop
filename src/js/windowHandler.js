@@ -35,6 +35,8 @@ div.content {
 `
 
 let windowID = 0
+let zIndex = 1
+let active = false
 
 export default class WindowHandler extends window.HTMLElement {
   constructor () {
@@ -42,6 +44,18 @@ export default class WindowHandler extends window.HTMLElement {
     this.attachShadow({ mode: 'open' })
     this.shadowRoot.appendChild(template.content.cloneNode(true))
     /* console.log(windowID) */
+    /* this.shadowRoot.addEventListener('click', () => this.dragStart(), false) */
+  }
+
+  connectedCallback () {
+    console.log('connected window')
+    this.shadowRoot.addEventListener('mousedown', (e) => this.dragStart(e), false)
+    this.shadowRoot.addEventListener('mousemove', (e) => this.drag(e), false)
+    this.shadowRoot.addEventListener('mouseup', (e) => this.dragStop(e), false)
+  }
+
+  disconnectedCallback () {
+    this.shadowRoot.removeEventListener()
   }
 
   set setId (id) {
@@ -49,6 +63,11 @@ export default class WindowHandler extends window.HTMLElement {
     /* .log('TESTID' + this.shadowRoot.querySelector('div.window').id) */
     this.shadowRoot.querySelector('div.window').id = windowID
     /* console.log(windowID) */
+  }
+
+  set zIndex (index) {
+    zIndex = index
+    this.shadowRoot.querySelector('div.window').zIndex = zIndex
   }
 
   jump (step) {
@@ -74,12 +93,24 @@ export default class WindowHandler extends window.HTMLElement {
     console.log(desktopWindow.style.top)
   }
 
-  connectedCalllback () {
-    this.addEventListener('mousedown', () => this.dragStart())
+  dragStart (e) {
+    active = true
+    /* console.log(e) */
+    e = e || window.event
+    console.log('VÄRSTA DRAGET UNTZ UNTZ')
+    const initialX = e.clientX
+    const initalY = e.clientY
+    console.log(initialX + '-' + initalY)
   }
 
-  _dragStart () {
+  drag (e) {
+    if (active) {
+      console.log(e.clientX + '-' + e.clientY)
+    }
+  }
 
+  dragStop (e) {
+    active = false
   }
 }
 

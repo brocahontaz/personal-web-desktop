@@ -38,11 +38,12 @@ export default class MenuIcon extends window.HTMLElement {
   }
 
   connectedCallback () {
-    this.addEventListener('click', () => this.openWindow())
+    console.log('connected icon')
+    this.shadowRoot.addEventListener('click', () => this.openWindow())
   }
 
   disconnectedCallback () {
-    this.removeEventListener()
+    this.shadowRoot.removeEventListener()
   }
 
   openWindow () {

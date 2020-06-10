@@ -20,6 +20,8 @@ h1 {
 asdasd
 <h1></h1>
 <slot></slot>
+<slot></slot>
+<slot></slot>
 </div>
 `
 
@@ -37,10 +39,10 @@ export default class Desktop extends window.HTMLElement {
   addWindow () {
     windowID++
     jumps++
-    const window = document.createElement('window-handler')
-    window.setId = windowID
-    window.jump(jumps)
-    this.shadowRoot.querySelector('div').appendChild(window)
+    const appWindow = document.createElement('window-handler')
+    appWindow.setId = windowID
+    appWindow.jump(jumps)
+    this.shadowRoot.appendChild(appWindow) /* .querySelector('div') */
   }
 
   deleteWindow () {
