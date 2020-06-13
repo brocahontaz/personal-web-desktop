@@ -10,6 +10,7 @@ div.window {
     position: absolute;
     top: 10px;
     left: 10px;
+    z-index: 1;
 }
 div.topbar {
     width: 100%;
@@ -19,6 +20,7 @@ div.topbar {
     position: absolute;
     top: 0;
     left: 0;
+    z-index: 1;
 }
 div.content {
 
@@ -87,7 +89,7 @@ export default class WindowHandler extends window.HTMLElement {
 
   set zIndex (index) {
     this._zIndex = index
-    this.shadowRoot.querySelector('div.window').zIndex = this._zIndex
+    this.shadowRoot.querySelector('div.window').style.zIndex = this._zIndex
   }
 
   get zIndex () {
@@ -119,8 +121,9 @@ export default class WindowHandler extends window.HTMLElement {
 
   focusWindow () {
     /* document.body.querySelector('window-handler').shadowRoot.querySelector('div.window').style.background = 'rgba(178, 178, 178, 0.5)' */
-    this.shadowRoot.querySelector('div.window').style.background = 'rgba(178, 178, 178, 0.9)'
+    this.shadowRoot.querySelector('div.window').style.background = 'rgba(178, 178, 178, 1.0)'
     this.zIndex = 999
+    console.log('Z: ' + this.shadowRoot.querySelector('div.window').zIndex)
     console.log(this.zIndex)
   }
 
