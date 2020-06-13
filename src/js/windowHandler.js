@@ -33,7 +33,7 @@ div.content {
     </div>
 </div>
 `
-
+/*
 let windowID = 0
 let zIndex = 1
 let active = false
@@ -42,7 +42,7 @@ let initialX
 let currentY
 let currentX
 let yOffset = 0
-let xOffset = 0
+let xOffset = 0 */
 
 export default class WindowHandler extends window.HTMLElement {
   constructor () {
@@ -51,13 +51,27 @@ export default class WindowHandler extends window.HTMLElement {
     this.shadowRoot.appendChild(template.content.cloneNode(true))
     /* console.log(windowID) */
     /* this.shadowRoot.addEventListener('click', () => this.dragStart(), false) */
+    this._windowID = 0
+    this._zIndex = 1
+    this._active = false
+    this._initialY = 0
+    this._initialX = 0
+    this._currentY = 0
+    this._currentX = 0
+    this._yOffset = 0
+    this._xOffset = 0
   }
 
   connectedCallback () {
+    this.tabIndex = 1
+    this.setAttribute('tabindex', 1)
     console.log('connected window')
-    this.shadowRoot.addEventListener('mousedown', (e) => this.dragStart(e), false)
-    this.shadowRoot.addEventListener('mousemove', (e) => this.drag(e), false)
-    this.shadowRoot.addEventListener('mouseup', (e) => this.dragStop(e), false)
+    /* this.shadowRoot.getElementById(this._windowID).addEventListener('click', () => this.focusWindow(), false) */
+    this.addEventListener('focus', () => this.focusWindow(), false)
+    this.addEventListener('blur', () => this.unFocusWindow(), false)
+    this.shadowRoot.getElementById(this._windowID).querySelector('div.topbar').addEventListener('mousedown', (e) => this.dragStart(e), false)
+    document.addEventListener('mousemove', (e) => this.drag(e), false)
+    this.shadowRoot.getElementById(this._windowID).querySelector('div.topbar').addEventListener('mouseup', (e) => this.dragStop(e), false)
   }
 
   disconnectedCallback () {
@@ -65,15 +79,19 @@ export default class WindowHandler extends window.HTMLElement {
   }
 
   set setId (id) {
-    windowID = id
+    this._windowID = id
     /* .log('TESTID' + this.shadowRoot.querySelector('div.window').id) */
-    this.shadowRoot.querySelector('div.window').id = windowID
+    this.shadowRoot.querySelector('div.window').id = this._windowID
     /* console.log(windowID) */
   }
 
   set zIndex (index) {
-    zIndex = index
-    this.shadowRoot.querySelector('div.window').zIndex = zIndex
+    this._zIndex = index
+    this.shadowRoot.querySelector('div.window').zIndex = this._zIndex
+  }
+
+  get zIndex () {
+    return this._zIndex
   }
 
   jump (step) {
@@ -99,43 +117,59 @@ export default class WindowHandler extends window.HTMLElement {
     console.log(desktopWindow.style.top)
   }
 
+  focusWindow () {
+    /* document.body.querySelector('window-handler').shadowRoot.querySelector('div.window').style.background = 'rgba(178, 178, 178, 0.5)' */
+    this.shadowRoot.querySelector('div.window').style.background = 'rgba(178, 178, 178, 0.9)'
+    this.zIndex = 999
+    console.log(this.zIndex)
+  }
+
+  unFocusWindow () {
+    this.shadowRoot.querySelector('div.window').style.background = 'rgba(178, 178, 178, 0.5)'
+    this.zIndex = 1
+    console.log(this.zIndex)
+  }
+
   dragStart (e) {
-    active = true
+    this.shadowRoot.querySelector('div.topbar').style.cursor = 'pointer'
+    this._active = true
     /* console.log(e) */
     e = e || window.event
     e.preventDefault()
     console.log('VÄRSTA DRAGET UNTZ UNTZ')
-    initialX = e.clientX - xOffset
-    initialY = e.clientY - yOffset
-    console.log(initialX + '-' + initialY)
+    this._initialX = e.clientX - this._xOffset
+    this._initialY = e.clientY - this._yOffset
+    console.log(this._initialX + '-' + this._initialY)
   }
 
   drag (e) {
-    if (active) {
+    if (this._active) {
       e = e || window.event
       e.preventDefault()
-      currentY = e.clientY - initialY
-      currentX = e.clientX - initialX
+      this._currentY = e.clientY - this._initialY
+      this._currentX = e.clientX - this._initialX
 
-      yOffset = currentY
-      xOffset = currentX
+      this._yOffset = this._currentY
+      this._xOffset = this._currentX
 
-      this.move(currentX, currentY)
+      this.move(this._currentX, this._currentY)
 
       console.log(e.clientX + '-' + e.clientY)
     }
   }
 
   dragStop (e) {
+    this.shadowRoot.querySelector('div.topbar').style.cursor = 'auto'
     console.log('DRAGET ÄR ÖVER')
-    active = false
-    initialY = currentY
-    initialX = currentX
+    this._active = false
+    this._initialY = this._currentY
+    this._initialX = this._currentX
   }
 
   move (xPos, yPos) {
     console.log('MOVEIT MOVEIT')
-    const desktopWindow = this.shadowRoot.querySelector('div.window')
+    /* const desktopWindow = this.shadowRoot.querySelector('div.window') */
+    const desktopWindow = this.shadowRoot.getElementById(this._windowID)
     console.log(desktopWindow.style.top)
     /* desktopWindow.style.top = yPos + 'px'
     desktopWindow.style.left = xPos + 'px' */
