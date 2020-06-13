@@ -37,6 +37,12 @@ div.content {
 let windowID = 0
 let zIndex = 1
 let active = false
+let initialY
+let initialX
+let currentY
+let currentX
+let yOffset = 0
+let xOffset = 0
 
 export default class WindowHandler extends window.HTMLElement {
   constructor () {
@@ -97,20 +103,43 @@ export default class WindowHandler extends window.HTMLElement {
     active = true
     /* console.log(e) */
     e = e || window.event
+    e.preventDefault()
     console.log('VÄRSTA DRAGET UNTZ UNTZ')
-    const initialX = e.clientX
-    const initalY = e.clientY
-    console.log(initialX + '-' + initalY)
+    initialX = e.clientX - xOffset
+    initialY = e.clientY - yOffset
+    console.log(initialX + '-' + initialY)
   }
 
   drag (e) {
     if (active) {
+      e = e || window.event
+      e.preventDefault()
+      currentY = e.clientY - initialY
+      currentX = e.clientX - initialX
+
+      yOffset = currentY
+      xOffset = currentX
+
+      this.move(currentX, currentY)
+
       console.log(e.clientX + '-' + e.clientY)
     }
   }
 
   dragStop (e) {
+    console.log('DRAGET ÄR ÖVER')
     active = false
+    initialY = currentY
+    initialX = currentX
+  }
+
+  move (xPos, yPos) {
+    console.log('MOVEIT MOVEIT')
+    const desktopWindow = this.shadowRoot.querySelector('div.window')
+    console.log(desktopWindow.style.top)
+    /* desktopWindow.style.top = yPos + 'px'
+    desktopWindow.style.left = xPos + 'px' */
+    desktopWindow.style.transform = 'translate3d(' + xPos + 'px, ' + yPos + 'px, 0)'
   }
 }
 
