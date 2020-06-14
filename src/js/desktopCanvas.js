@@ -17,8 +17,6 @@ h1 {
 }
 </style>
 <div id="canvas">
-asdasd
-<h1></h1>
 <slot></slot>
 <slot></slot>
 <slot></slot>
@@ -33,13 +31,13 @@ export default class Desktop extends window.HTMLElement {
     super()
     this.attachShadow({ mode: 'open' })
     this.shadowRoot.appendChild(template.content.cloneNode(true))
-    this.shadowRoot.querySelector('h1').innerText = this.getAttribute('name')
+    /* this.shadowRoot.querySelector('h1').innerText = this.getAttribute('name') */
   }
 
   addWindow () {
     windowID++
     jumps++
-    const appWindow = document.createElement('window-handler')
+    const appWindow = document.createElement('window-container')
     appWindow.setId = windowID
     appWindow.jump(jumps)
     this.shadowRoot.appendChild(appWindow) /* .querySelector('div') */

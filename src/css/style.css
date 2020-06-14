@@ -12,6 +12,8 @@ html, body {
 Basic styling
 */
 body {
-	
-    /*background-image: url('../image/Beach.jpg');*/
+	/*background-image: url('../image/Beach.jpg');*/
+	font-family: 'Roboto', sans-serif;
+	font-size: 62.5%;
+	font-weight: 400;
 }

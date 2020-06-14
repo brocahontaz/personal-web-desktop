@@ -2,33 +2,74 @@ const template = document.createElement('template')
 template.innerHTML = `
 <head>
 <style>
-div.window {
+div.windowContainer {
     width: 500px;
     height: 500px;
-    background: rgba(178, 178, 178, 0.5);
+    /*background: rgba(128, 128, 128, 0.5);*/
     border-radius: 10px 10px 0px 0px;
     position: absolute;
     top: 10px;
     left: 10px;
     z-index: 1;
 }
-div.topbar {
+div.windowContainer .topbar {
+    display: grid;
+    grid-template-columns: 80% 20%;
     width: 100%;
     height: 30px;
-    background: rgba(178, 178, 178, 0.5);
+    background: rgba(64, 64, 64, 0.5);
     border-radius: 10px 10px 0px 0px;
     position: absolute;
     top: 0;
     left: 0;
     z-index: 1;
 }
+div.windowContainer .topbar .applicationHeader {
+    display: flex;
+    align-items: center;
+    grid-column-start: 1;
+    grid-column-end: 1;
+    font-size: 0.8rem;
+    color: #ffffff;
+    font-weight: 800;
+    
+}
+div.windowContainer .topbar .windowButtons {
+  display: flex;
+  align-items: center;
+  justify-self: right;
+  grid-column-start: 2;
+  grid-column-end: 2;
+  margin-right: 10px;
+  color: #ffffff;
+}
 div.content {
+  position: absolute;
+  top: 30px;
+  width: 100%;
+  height: calc(100% - 30px);
+  background: rgba(128, 128, 128, 0.5);
+}
 
+span.applicationName {
+  margin-left: 5px;
+}
+
+img.applicationIcon {
+  height: 20px;
+  margin-left: 10px;
 }
 </style>
 </head>
-<div class="window" id='0'>
-    <div class="topbar">hej
+<div class="windowContainer" id='0'>
+    <div class="topbar">
+      <div class="applicationHeader">
+        <img src="/image/monster.png" class="applicationIcon">
+        <span class="applicationName">Application</span>
+      </div>
+      <div class="windowButtons">
+        - [] x
+      </div>
     </div>
     <div class="content">
         
@@ -46,7 +87,7 @@ let currentX
 let yOffset = 0
 let xOffset = 0 */
 
-export default class WindowHandler extends window.HTMLElement {
+export default class WindowContainer extends window.HTMLElement {
   constructor () {
     super()
     this.attachShadow({ mode: 'open' })
@@ -72,6 +113,7 @@ export default class WindowHandler extends window.HTMLElement {
     this.addEventListener('focus', () => this.focusWindow(), false)
     this.addEventListener('blur', () => this.unFocusWindow(), false)
     this.shadowRoot.getElementById(this._windowID).querySelector('div.topbar').addEventListener('mousedown', (e) => this.dragStart(e), false)
+    this.shadowRoot.getElementById(this._windowID).querySelector('div.topbar').addEventListener('focus', (e) => this.focusWindow(), false)
     document.addEventListener('mousemove', (e) => this.drag(e), false)
     this.shadowRoot.getElementById(this._windowID).querySelector('div.topbar').addEventListener('mouseup', (e) => this.dragStop(e), false)
   }
@@ -83,13 +125,13 @@ export default class WindowHandler extends window.HTMLElement {
   set setId (id) {
     this._windowID = id
     /* .log('TESTID' + this.shadowRoot.querySelector('div.window').id) */
-    this.shadowRoot.querySelector('div.window').id = this._windowID
+    this.shadowRoot.querySelector('div.windowContainer').id = this._windowID
     /* console.log(windowID) */
   }
 
   set zIndex (index) {
     this._zIndex = index
-    this.shadowRoot.querySelector('div.window').style.zIndex = this._zIndex
+    this.shadowRoot.querySelector('div.windowContainer').style.zIndex = this._zIndex
   }
 
   get zIndex () {
@@ -97,7 +139,7 @@ export default class WindowHandler extends window.HTMLElement {
   }
 
   jump (step) {
-    const desktopWindow = this.shadowRoot.querySelector('div.window')
+    const desktopWindow = this.shadowRoot.querySelector('div.windowContainer')
     const desktopWindowStyles = window.getComputedStyle(desktopWindow, null)
     desktopWindow.style.top = '10px'
     desktopWindow.style.left = '10px'
@@ -109,7 +151,7 @@ export default class WindowHandler extends window.HTMLElement {
     console.log('ds', desktopWindowStyles.alignContent)
     console.log('TEST: ' + desktopWindowStyles.getPropertyValue('top'))
     console.log('TOPMARGIN TEST: ' + window.getComputedStyle(desktopWindow, null).getPropertyValue('width'))
-    console.log(this.shadowRoot.querySelector('div.window').id)
+    console.log(this.shadowRoot.querySelector('div.windowContainer').id)
     if (parseInt(topMargin) < 100 && parseInt(leftMargin) < 100) {
       desktopWindow.style.top = `${parseInt(topMargin) + (step * 10)}px`
       console.log(`${parseInt(topMargin) + (step * 10)}px`)
@@ -121,14 +163,14 @@ export default class WindowHandler extends window.HTMLElement {
 
   focusWindow () {
     /* document.body.querySelector('window-handler').shadowRoot.querySelector('div.window').style.background = 'rgba(178, 178, 178, 0.5)' */
-    this.shadowRoot.querySelector('div.window').style.background = 'rgba(178, 178, 178, 1.0)'
+    this.shadowRoot.querySelector('div.windowContainer').style.background = 'rgba(128, 128, 128, 0.9)'
     this.zIndex = 999
-    console.log('Z: ' + this.shadowRoot.querySelector('div.window').zIndex)
+    console.log('Z: ' + this.shadowRoot.querySelector('div.windowContainer').zIndex)
     console.log(this.zIndex)
   }
 
   unFocusWindow () {
-    this.shadowRoot.querySelector('div.window').style.background = 'rgba(178, 178, 178, 0.5)'
+    this.shadowRoot.querySelector('div.windowContainer').style.background = 'rgba(128, 128, 128, 0.5)'
     this.zIndex = 1
     console.log(this.zIndex)
   }
@@ -138,7 +180,7 @@ export default class WindowHandler extends window.HTMLElement {
     this._active = true
     /* console.log(e) */
     e = e || window.event
-    e.preventDefault()
+    /* e.preventDefault() */
     console.log('VÄRSTA DRAGET UNTZ UNTZ')
     this._initialX = e.clientX - this._xOffset
     this._initialY = e.clientY - this._yOffset
@@ -148,7 +190,7 @@ export default class WindowHandler extends window.HTMLElement {
   drag (e) {
     if (this._active) {
       e = e || window.event
-      e.preventDefault()
+      /* e.preventDefault() */
       this._currentY = e.clientY - this._initialY
       this._currentX = e.clientX - this._initialX
 
@@ -180,4 +222,4 @@ export default class WindowHandler extends window.HTMLElement {
   }
 }
 
-window.customElements.define('window-handler', WindowHandler)
+window.customElements.define('window-container', WindowContainer)
