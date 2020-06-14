@@ -1,3 +1,5 @@
+@import "../../node_modules/@fortawesome/fontawesome-free/css/all.css";
+
 html, body, div, header, nav, main, section, footer{
 	margin: 0;
 	padding: 0;

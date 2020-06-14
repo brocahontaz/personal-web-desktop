@@ -1,12 +1,13 @@
 const template = document.createElement('template')
 template.innerHTML = `
 <head>
+<link rel="stylesheet" href="/css/font-awesome-4.7.0/css/font-awesome.css">
 <style>
 div.windowContainer {
     width: 500px;
     height: 500px;
     /*background: rgba(128, 128, 128, 0.5);*/
-    border-radius: 10px 10px 0px 0px;
+    border-radius: 7px 7px 2px 2px;
     position: absolute;
     top: 10px;
     left: 10px;
@@ -18,7 +19,7 @@ div.windowContainer .topbar {
     width: 100%;
     height: 30px;
     background: rgba(64, 64, 64, 0.5);
-    border-radius: 10px 10px 0px 0px;
+    border-radius: 7px 7px 0px 0px;
     position: absolute;
     top: 0;
     left: 0;
@@ -43,6 +44,11 @@ div.windowContainer .topbar .windowButtons {
   margin-right: 10px;
   color: #ffffff;
 }
+
+div.windowContainer .topbar .windowButtons i {
+  margin-left: 0px;
+}
+
 div.content {
   position: absolute;
   top: 30px;
@@ -58,6 +64,41 @@ span.applicationName {
 img.applicationIcon {
   height: 20px;
   margin-left: 10px;
+  font-size: 0.7rem;
+}
+
+button {
+  height: 24px;
+  width: 24px;
+  background-color: rgba(0,0,0,0);
+  box-shadow: 0px 0px 0px transparent;
+  border: 0px solid transparent;
+  border-radius: 12px;
+  text-shadow: 0px 0px 0px transparent;
+  padding: 0;
+  margin: 0;
+  color: #ffffff;
+  text-align: center;
+  font-size: 0.7rem;
+}
+
+button:focus {
+  background-color: rgba(255,255,255, 0);
+  box-shadow: 0px 0px 0px transparent;
+  border: 0px solid transparent;
+  outline: 0;
+  text-shadow: 0px 0px 0px transparent;
+  padding: 0;
+  color: #ffffff;
+  text-align: center;
+}
+
+button:hover {
+  background-color: rgba(0,0,0, 0.5);
+}
+
+button:active {
+  background-color: rgba(255,255,255, 0.5);
 }
 </style>
 </head>
@@ -68,7 +109,9 @@ img.applicationIcon {
         <span class="applicationName">Application</span>
       </div>
       <div class="windowButtons">
-        - [] x
+        <button id="minButton"><i class="fa fa-window-minimize"></i></button>
+        <button id="maxButton"><i class="fa fa-window-maximize"></i></button>
+        <button id="closeButton"><i class="fa fa-times"></i></button>   
       </div>
     </div>
     <div class="content">
@@ -116,6 +159,8 @@ export default class WindowContainer extends window.HTMLElement {
     this.shadowRoot.getElementById(this._windowID).querySelector('div.topbar').addEventListener('focus', (e) => this.focusWindow(), false)
     document.addEventListener('mousemove', (e) => this.drag(e), false)
     this.shadowRoot.getElementById(this._windowID).querySelector('div.topbar').addEventListener('mouseup', (e) => this.dragStop(e), false)
+
+    this.shadowRoot.getElementById('close')
   }
 
   disconnectedCallback () {
