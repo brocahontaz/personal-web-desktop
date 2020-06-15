@@ -25,6 +25,7 @@ h1 {
 
 let windowID = 0
 let jumps = 0
+let row = 0
 
 export default class Desktop extends window.HTMLElement {
   constructor () {
@@ -35,11 +36,16 @@ export default class Desktop extends window.HTMLElement {
   }
 
   addWindow () {
+    if (parseInt(jumps) >= 20) {
+      jumps = 0
+      row++
+    }
+
     windowID++
     jumps++
     const appWindow = document.createElement('window-container')
     appWindow.setId = windowID
-    appWindow.jump(jumps)
+    appWindow.jump(jumps, row)
     this.shadowRoot.appendChild(appWindow) /* .querySelector('div') */
   }
 

@@ -12,6 +12,7 @@ div.windowContainer {
     top: 10px;
     left: 10px;
     z-index: 1;
+    border: 1px solid #adadad;
 }
 div.windowContainer .topbar {
     display: grid;
@@ -146,25 +147,24 @@ export default class WindowContainer extends window.HTMLElement {
     this._currentX = 0
     this._yOffset = 0
     this._xOffset = 0
+    this._maximized = false
+    this._restoreWidth = 500
+    this._restoreHeight = 500
   }
 
   connectedCallback () {
+    // Make focusable
     this.tabIndex = 1
     this.setAttribute('tabindex', 1)
     console.log('connected window')
-    /* this.shadowRoot.getElementById(this._windowID).addEventListener('click', () => this.focusWindow(), false) */
-    this.addEventListener('focus', () => this.focusWindow(), false)
-    this.addEventListener('blur', () => this.unFocusWindow(), false)
-    this.shadowRoot.getElementById(this._windowID).querySelector('div.topbar').addEventListener('mousedown', (e) => this.dragStart(e), false)
-    this.shadowRoot.getElementById(this._windowID).querySelector('div.topbar').addEventListener('focus', (e) => this.focusWindow(), false)
-    document.addEventListener('mousemove', (e) => this.drag(e), false)
-    this.shadowRoot.getElementById(this._windowID).querySelector('div.topbar').addEventListener('mouseup', (e) => this.dragStop(e), false)
 
-    this.shadowRoot.getElementById('close')
+    // Subscribe to event listeners
+    this.subscribeListeners()
   }
 
   disconnectedCallback () {
-    this.shadowRoot.removeEventListener()
+    // Unsubscribe to event listeners
+    this.unsubscribeListeners()
   }
 
   set setId (id) {
@@ -172,6 +172,10 @@ export default class WindowContainer extends window.HTMLElement {
     /* .log('TESTID' + this.shadowRoot.querySelector('div.window').id) */
     this.shadowRoot.querySelector('div.windowContainer').id = this._windowID
     /* console.log(windowID) */
+  }
+
+  get getId () {
+    return this._windowID
   }
 
   set zIndex (index) {
@@ -183,27 +187,24 @@ export default class WindowContainer extends window.HTMLElement {
     return this._zIndex
   }
 
-  jump (step) {
+  jump (step, row) {
     const desktopWindow = this.shadowRoot.querySelector('div.windowContainer')
-    const desktopWindowStyles = window.getComputedStyle(desktopWindow, null)
+    // const desktopWindowStyles = window.getComputedStyle(desktopWindow, null)
     desktopWindow.style.top = '10px'
     desktopWindow.style.left = '10px'
     const topMargin = desktopWindow.style.top
     const leftMargin = desktopWindow.style.left
-    console.log('Margin ' + topMargin)
-    console.log(this)
-    console.log(desktopWindow)
-    console.log('ds', desktopWindowStyles.alignContent)
-    console.log('TEST: ' + desktopWindowStyles.getPropertyValue('top'))
-    console.log('TOPMARGIN TEST: ' + window.getComputedStyle(desktopWindow, null).getPropertyValue('width'))
-    console.log(this.shadowRoot.querySelector('div.windowContainer').id)
-    if (parseInt(topMargin) < 100 && parseInt(leftMargin) < 100) {
+    // console.log(topMargin + ' - ' + leftMargin)
+    // console.log(this.shadowRoot.querySelector('div.windowContainer').id)
+
+    if (parseInt(step) <= 20) {
       desktopWindow.style.top = `${parseInt(topMargin) + (step * 10)}px`
-      console.log(`${parseInt(topMargin) + (step * 10)}px`)
-      desktopWindow.style.left = `${parseInt(leftMargin) + (step * 10)}px`
-      console.log('IFIFIFIF')
+      desktopWindow.style.left = `${parseInt(leftMargin) + (step * 10) + (row * 100)}px`
+      // console.log(`${parseInt(topMargin) + (step * 10)}px`)
+
+      // console.log('IFIFIFIF')
     }
-    console.log(desktopWindow.style.top)
+    // console.log(desktopWindow.style.top)
   }
 
   focusWindow () {
@@ -215,25 +216,30 @@ export default class WindowContainer extends window.HTMLElement {
   }
 
   unFocusWindow () {
-    this.shadowRoot.querySelector('div.windowContainer').style.background = 'rgba(128, 128, 128, 0.5)'
-    this.zIndex = 1
-    console.log(this.zIndex)
+    if (!this._maximized) {
+      this.shadowRoot.querySelector('div.windowContainer').style.background = 'rgba(128, 128, 128, 0.5)'
+      this.zIndex = 1
+      console.log(this.zIndex)
+    }
   }
 
   dragStart (e) {
-    this.shadowRoot.querySelector('div.topbar').style.cursor = 'pointer'
-    this._active = true
-    /* console.log(e) */
-    e = e || window.event
-    /* e.preventDefault() */
-    console.log('VÄRSTA DRAGET UNTZ UNTZ')
-    this._initialX = e.clientX - this._xOffset
-    this._initialY = e.clientY - this._yOffset
-    console.log(this._initialX + '-' + this._initialY)
+    console.log(this._maximized)
+    if (!this._maximized) {
+      this.shadowRoot.querySelector('div.topbar').style.cursor = 'grabbing'
+      this._active = true
+      /* console.log(e) */
+      e = e || window.event
+      /* e.preventDefault() */
+      console.log('VÄRSTA DRAGET UNTZ UNTZ')
+      this._initialX = e.clientX - this._xOffset
+      this._initialY = e.clientY - this._yOffset
+      console.log(this._initialX + '-' + this._initialY)
+    }
   }
 
   drag (e) {
-    if (this._active) {
+    if (this._active && !this._maximized) {
       e = e || window.event
       /* e.preventDefault() */
       this._currentY = e.clientY - this._initialY
@@ -249,11 +255,13 @@ export default class WindowContainer extends window.HTMLElement {
   }
 
   dragStop (e) {
-    this.shadowRoot.querySelector('div.topbar').style.cursor = 'auto'
-    console.log('DRAGET ÄR ÖVER')
-    this._active = false
-    this._initialY = this._currentY
-    this._initialX = this._currentX
+    if (!this._maximized) {
+      this.shadowRoot.querySelector('div.topbar').style.cursor = 'auto'
+      console.log('DRAGET ÄR ÖVER')
+      this._active = false
+      this._initialY = this._currentY
+      this._initialX = this._currentX
+    }
   }
 
   move (xPos, yPos) {
@@ -264,6 +272,77 @@ export default class WindowContainer extends window.HTMLElement {
     /* desktopWindow.style.top = yPos + 'px'
     desktopWindow.style.left = xPos + 'px' */
     desktopWindow.style.transform = 'translate3d(' + xPos + 'px, ' + yPos + 'px, 0)'
+  }
+
+  closeWindow (e) {
+    this.remove()
+  }
+
+  maximizeWindowToggle (e) {
+    if (!this._maximized) {
+      const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
+      const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0)
+
+      this.shadowRoot.querySelector('div.windowContainer').style.left = 0
+      this.shadowRoot.querySelector('div.windowContainer').style.top = 0
+      this.shadowRoot.querySelector('div.windowContainer').style.transform = 'translate3d(' + 0 + 'px, ' + 0 + 'px, 0)'
+      this.shadowRoot.querySelector('div.windowContainer').style.borderRadius = 0
+      this.shadowRoot.querySelector('div.windowContainer').style.border = 0
+      this.shadowRoot.querySelector('div.topbar').style.borderRadius = 0
+
+      this.shadowRoot.querySelector('div.windowContainer').style.height = (vh - 50) + 'px'
+      this.shadowRoot.querySelector('div.windowContainer').style.width = vw + 'px'
+
+      // this._initialY = 0
+      // this._initialX = 0
+      this._yOffset = 0
+      this._xOffset = 0
+      this._maximized = true
+    } else {
+      this.shadowRoot.querySelector('div.windowContainer').style.borderRadius = '7px 7px 2px 2px'
+      this.shadowRoot.querySelector('div.windowContainer').style.border = '1px solid #adadad'
+      this.shadowRoot.querySelector('div.topbar').style.borderRadius = '7px 7px 0px 0px'
+      this.shadowRoot.querySelector('div.windowContainer').style.height = this._restoreHeight + 'px'
+      this.shadowRoot.querySelector('div.windowContainer').style.width = this._restoreWidth + 'px'
+      this.shadowRoot.querySelector('div.windowContainer').style.transform = 'translate3d(' + this._initialX + 'px, ' + this._initialY + 'px, 0)'
+      this._maximized = false
+    }
+  }
+
+  minimizeWindow (e) {
+
+  }
+
+  subscribeListeners () {
+    // Add eventlisteners for focus
+    this.addEventListener('focus', () => this.focusWindow(), false)
+    this.addEventListener('blur', () => this.unFocusWindow(), false)
+
+    // Add eventlisteners for drag
+    this.shadowRoot.getElementById(this._windowID).querySelector('div.topbar').addEventListener('mousedown', (e) => this.dragStart(e), false)
+    document.addEventListener('mousemove', (e) => this.drag(e), false)
+    this.shadowRoot.getElementById(this._windowID).querySelector('div.topbar').addEventListener('mouseup', (e) => this.dragStop(e), false)
+
+    // Add eventlisteners for action buttons
+    this.shadowRoot.getElementById('closeButton').addEventListener('click', (e) => this.closeWindow(e), false)
+    this.shadowRoot.getElementById('maxButton').addEventListener('click', (e) => this.maximizeWindowToggle(e), false)
+    this.shadowRoot.getElementById('minButton').addEventListener('click', (e) => this.minimizeWindow(e), false)
+  }
+
+  unsubscribeListeners () {
+    // Remove eventlisteners for focus
+    this.shadowRoot.removeEventListener('focus', () => this.focusWindow())
+    this.removeEventListener('blur', () => this.unFocusWindow())
+
+    // Remove eventlisteners for drag
+    this.shadowRoot.getElementById(this._windowID).querySelector('div.topbar').removeEventListener('mousedown', (e) => this.dragStart(e))
+    document.removeEventListener('mousemove', (e) => this.drag(e))
+    this.shadowRoot.getElementById(this._windowID).querySelector('div.topbar').removeEventListener('mouseup', (e) => this.dragStop(e))
+
+    // Remove eventlisteners for action buttons
+    this.shadowRoot.getElementById('closeButton').removeEventListener('click', (e) => this.closeWindow(e))
+    this.shadowRoot.getElementById('maxButton').removeEventListener('click', (e) => this.maximizeWindowToggle(e), false)
+    this.shadowRoot.getElementById('minButton').removeEventListener('click', (e) => this.minimizeWindow(e), false)
   }
 }
 
