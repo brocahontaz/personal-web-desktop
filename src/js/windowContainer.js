@@ -9,8 +9,8 @@ div.windowContainer {
     /*background: rgba(128, 128, 128, 0.5);*/
     border-radius: 7px 7px 2px 2px;
     position: absolute;
-    top: 10px;
-    left: 10px;
+    top: 0px;
+    left: 0px;
     z-index: 1;
     border: 1px solid #adadad;
 }
@@ -190,16 +190,24 @@ export default class WindowContainer extends window.HTMLElement {
   jump (step, row) {
     const desktopWindow = this.shadowRoot.querySelector('div.windowContainer')
     // const desktopWindowStyles = window.getComputedStyle(desktopWindow, null)
-    desktopWindow.style.top = '10px'
-    desktopWindow.style.left = '10px'
-    const topMargin = desktopWindow.style.top
-    const leftMargin = desktopWindow.style.left
+    // desktopWindow.style.top = '10px'
+    // desktopWindow.style.left = '10px'
+    // const topMargin = desktopWindow.style.top
+    // const leftMargin = desktopWindow.style.left
     // console.log(topMargin + ' - ' + leftMargin)
     // console.log(this.shadowRoot.querySelector('div.windowContainer').id)
 
     if (parseInt(step) <= 20) {
-      desktopWindow.style.top = `${parseInt(topMargin) + (step * 10)}px`
-      desktopWindow.style.left = `${parseInt(leftMargin) + (step * 10) + (row * 100)}px`
+      const yPos = `${(step * 10)}px`
+      const xPos = `${(step * 10) + (row * 100)}px`
+      this._initialX = (step * 10) + (row * 100)
+      this._initialY = (step * 10)
+      this._currentX = (step * 10) + (row * 100)
+      this._currentY = (step * 10)
+      this._xOffset = (step * 10) + (row * 100)
+      this._yOffset = (step * 10)
+
+      desktopWindow.style.transform = 'translate3d(' + xPos + ', ' + yPos + ', 0)'
       // console.log(`${parseInt(topMargin) + (step * 10)}px`)
 
       // console.log('IFIFIFIF')
@@ -268,7 +276,7 @@ export default class WindowContainer extends window.HTMLElement {
     console.log('MOVEIT MOVEIT')
     /* const desktopWindow = this.shadowRoot.querySelector('div.window') */
     const desktopWindow = this.shadowRoot.getElementById(this._windowID)
-    console.log(desktopWindow.style.top)
+    // console.log(desktopWindow.style.top)
     /* desktopWindow.style.top = yPos + 'px'
     desktopWindow.style.left = xPos + 'px' */
     desktopWindow.style.transform = 'translate3d(' + xPos + 'px, ' + yPos + 'px, 0)'
@@ -283,8 +291,8 @@ export default class WindowContainer extends window.HTMLElement {
       const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
       const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0)
 
-      this.shadowRoot.querySelector('div.windowContainer').style.left = 0
-      this.shadowRoot.querySelector('div.windowContainer').style.top = 0
+      // this.shadowRoot.querySelector('div.windowContainer').style.left = 0
+      // this.shadowRoot.querySelector('div.windowContainer').style.top = 0
       this.shadowRoot.querySelector('div.windowContainer').style.transform = 'translate3d(' + 0 + 'px, ' + 0 + 'px, 0)'
       this.shadowRoot.querySelector('div.windowContainer').style.borderRadius = 0
       this.shadowRoot.querySelector('div.windowContainer').style.border = 0
@@ -295,8 +303,8 @@ export default class WindowContainer extends window.HTMLElement {
 
       // this._initialY = 0
       // this._initialX = 0
-      this._yOffset = 0
-      this._xOffset = 0
+      // this._yOffset = 0
+      // this._xOffset = 0
       this._maximized = true
     } else {
       this.shadowRoot.querySelector('div.windowContainer').style.borderRadius = '7px 7px 2px 2px'
@@ -319,9 +327,9 @@ export default class WindowContainer extends window.HTMLElement {
     this.addEventListener('blur', () => this.unFocusWindow(), false)
 
     // Add eventlisteners for drag
-    this.shadowRoot.getElementById(this._windowID).querySelector('div.topbar').addEventListener('mousedown', (e) => this.dragStart(e), false)
+    this.shadowRoot.getElementById(this._windowID).querySelector('div.topbar .applicationHeader').addEventListener('mousedown', (e) => this.dragStart(e), false)
     document.addEventListener('mousemove', (e) => this.drag(e), false)
-    this.shadowRoot.getElementById(this._windowID).querySelector('div.topbar').addEventListener('mouseup', (e) => this.dragStop(e), false)
+    this.shadowRoot.getElementById(this._windowID).querySelector('div.topbar .applicationHeader').addEventListener('mouseup', (e) => this.dragStop(e), false)
 
     // Add eventlisteners for action buttons
     this.shadowRoot.getElementById('closeButton').addEventListener('click', (e) => this.closeWindow(e), false)
@@ -335,9 +343,9 @@ export default class WindowContainer extends window.HTMLElement {
     this.removeEventListener('blur', () => this.unFocusWindow())
 
     // Remove eventlisteners for drag
-    this.shadowRoot.getElementById(this._windowID).querySelector('div.topbar').removeEventListener('mousedown', (e) => this.dragStart(e))
+    this.shadowRoot.getElementById(this._windowID).querySelector('div.topbar .applicationHeader').removeEventListener('mousedown', (e) => this.dragStart(e))
     document.removeEventListener('mousemove', (e) => this.drag(e))
-    this.shadowRoot.getElementById(this._windowID).querySelector('div.topbar').removeEventListener('mouseup', (e) => this.dragStop(e))
+    this.shadowRoot.getElementById(this._windowID).querySelector('div.topbar .applicationHeader').removeEventListener('mouseup', (e) => this.dragStop(e))
 
     // Remove eventlisteners for action buttons
     this.shadowRoot.getElementById('closeButton').removeEventListener('click', (e) => this.closeWindow(e))

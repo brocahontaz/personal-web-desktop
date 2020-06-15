@@ -46,7 +46,9 @@ export default class Desktop extends window.HTMLElement {
     const appWindow = document.createElement('window-container')
     appWindow.setId = windowID
     appWindow.jump(jumps, row)
-    this.shadowRoot.appendChild(appWindow) /* .querySelector('div') */
+
+    // appWindow.move((row * 100), (jumps * 10))
+    this.shadowRoot.getElementById('canvas').appendChild(appWindow) /* .querySelector('div') */
   }
 
   deleteWindow () {
