@@ -35,6 +35,16 @@ export default class MenuIcon extends window.HTMLElement {
     this.attachShadow({ mode: 'open' })
     this.shadowRoot.appendChild(template.content.cloneNode(true))
     this.shadowRoot.querySelector('img').setAttribute('src', this.getAttribute('src'))
+    this._name = this.getAttribute('name')
+    this._icon = this.getAttribute('src')
+  }
+
+  get name () {
+    return this._name
+  }
+
+  get icon () {
+    return this._icon
   }
 
   connectedCallback () {
@@ -48,7 +58,7 @@ export default class MenuIcon extends window.HTMLElement {
 
   openWindow () {
     console.log('HEJ')
-    document.querySelector('desktop-canvas').addWindow('tet')
+    document.querySelector('desktop-canvas').addWindow(this.icon, this.name)
   }
 }
 

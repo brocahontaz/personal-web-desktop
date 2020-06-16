@@ -21,6 +21,7 @@ h1 {
 }
 </style>
 <div id="canvas">
+<slot></slot>
 </div>
 `
 
@@ -37,7 +38,7 @@ export default class Desktop extends window.HTMLElement {
     /* this.shadowRoot.querySelector('h1').innerText = this.getAttribute('name') */
   }
 
-  addWindow () {
+  addWindow (icon, name) {
     this.setOverlap()
 
     if (parseInt(jumps) >= 20) {
@@ -49,6 +50,11 @@ export default class Desktop extends window.HTMLElement {
     jumps++
     const appWindow = document.createElement('window-container')
     appWindow.setId = windowID
+    appWindow.setIcon = icon
+    appWindow.setName = name
+
+    appWindow.setAttribute('icon', icon)
+    appWindow.setAttribute('name', name)
     // appWindow.zIndex = 999
     appWindow.jump(jumps, row)
     if (this.checkMaximized()) {

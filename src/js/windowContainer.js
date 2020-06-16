@@ -163,6 +163,11 @@ export default class WindowContainer extends window.HTMLElement {
     this._maximized = false
     this._restoreWidth = 500
     this._restoreHeight = 500
+    this._icon = this.getAttribute('icon')
+    this._name = this.getAttribute('name')
+
+    this.shadowRoot.querySelector('.applicationIcon').setAttribute('src', this._icon)
+    this.shadowRoot.querySelector('.applicationName').innerHTML = this._name
   }
 
   connectedCallback () {
@@ -179,6 +184,12 @@ export default class WindowContainer extends window.HTMLElement {
     // Unsubscribe to event listeners
     this.unsubscribeListeners()
   }
+
+  attributeChangedCallback (name, oldValue, newValue) {
+    this.updateApp()
+  }
+
+  static get observedAttributes () { return ['icon', 'name'] }
 
   set setId (id) {
     this._windowID = id
@@ -202,6 +213,16 @@ export default class WindowContainer extends window.HTMLElement {
 
   get isMaximized () {
     return this._maximized
+  }
+
+  updateApp () {
+    this._icon = this.getAttribute('icon')
+    this._name = this.getAttribute('name')
+
+    this.shadowRoot.querySelector('.applicationIcon').setAttribute('src', this._icon)
+    this.shadowRoot.querySelector('.applicationName').innerHTML = this._name
+    const app = document.createElement(this._name)
+    this.shadowRoot.querySelector('div.content').appendChild(app)
   }
 
   jump (step, row) {
