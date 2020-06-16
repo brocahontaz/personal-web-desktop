@@ -1,7 +1,7 @@
 const template = document.createElement('template')
 template.innerHTML = `
 <head>
-<link rel="stylesheet" href="/css/font-awesome-4.7.0/css/font-awesome.css">
+<link rel="stylesheet" href="../css/font-awesome-4.7.0/css/font-awesome.css">
 <style>
 div.windowContainer {
     width: 500px;
@@ -13,7 +13,20 @@ div.windowContainer {
     left: 0px;
     z-index: 1;
     border: 1px solid #adadad;
+
+    /*transition: top .5s 0s cubic-bezier(.1, 1.2, .3, 1), left .5s, width .5s .5s cubic-bezier(.1, 1.2, .3, 1), opacity .3s, visibility .5s;*/
 }
+div.windowContainer .maximized {
+
+}
+
+div.windowContainer.minimized {
+  /*top: 100%;*/
+  left: 0;
+  visibility: hidden;
+  transition: top .5s 0s cubic-bezier(.1, 1.2, .3, 1), transform .5s 0s cubic-bezier(.1, 1.2, .3, 1), width .5s .5s cubic-bezier(.1, 1.2, .3, 1), opacity .3s;
+}
+
 div.windowContainer .topbar {
     display: grid;
     grid-template-columns: 80% 20%;
@@ -34,7 +47,7 @@ div.windowContainer .topbar .applicationHeader {
     font-size: 0.8rem;
     color: #ffffff;
     font-weight: 800;
-    
+    user-select: none;
 }
 div.windowContainer .topbar .windowButtons {
   display: flex;
@@ -187,6 +200,10 @@ export default class WindowContainer extends window.HTMLElement {
     return this._zIndex
   }
 
+  get isMaximized () {
+    return this._maximized
+  }
+
   jump (step, row) {
     const desktopWindow = this.shadowRoot.querySelector('div.windowContainer')
     // const desktopWindowStyles = window.getComputedStyle(desktopWindow, null)
@@ -227,8 +244,11 @@ export default class WindowContainer extends window.HTMLElement {
     if (!this._maximized) {
       this.shadowRoot.querySelector('div.windowContainer').style.background = 'rgba(128, 128, 128, 0.5)'
       this.zIndex = 1
-      console.log(this.zIndex)
+    } else {
+      this.zIndex = 2
     }
+
+    console.log(this.zIndex)
   }
 
   dragStart (e) {
@@ -256,6 +276,13 @@ export default class WindowContainer extends window.HTMLElement {
       this._yOffset = this._currentY
       this._xOffset = this._currentX
 
+      const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
+      const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0)
+
+      if (e.clientY < 0 || e.clientY > vh || e.clientX < 0 || e.clientX > vw + 10) {
+        this.dragStop(e)
+      }
+
       this.move(this._currentX, this._currentY)
 
       console.log(e.clientX + '-' + e.clientY)
@@ -279,7 +306,31 @@ export default class WindowContainer extends window.HTMLElement {
     // console.log(desktopWindow.style.top)
     /* desktopWindow.style.top = yPos + 'px'
     desktopWindow.style.left = xPos + 'px' */
-    desktopWindow.style.transform = 'translate3d(' + xPos + 'px, ' + yPos + 'px, 0)'
+
+    const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
+    const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0)
+
+    const boundaryTop = 0
+    const boundaryBottom = vh - 80
+    const boundaryRight = vw - (this._restoreWidth / 2)
+    const boundaryLeft = 0 - this._restoreWidth / 2
+    /*
+    if (yPos > boundaryBottom) {
+      console.log('hejhejhej')
+      desktopWindow.style.transform = 'translate3d(' + xPos + 'px, ' + boundaryBottom + 'px, 0)'
+    } else if (xPos < boundaryLeft) {
+      desktopWindow.style.transform = 'translate3d(' + boundaryLeft + 'px, ' + yPos + 'px, 0)'
+    } else if (xPos > boundaryRight) {
+      desktopWindow.style.transform = 'translate3d(' + boundaryRight + 'px, ' + yPos + 'px, 0)'
+    } else if {} */
+
+    if (yPos > boundaryTop && yPos <= boundaryBottom && xPos >= boundaryLeft && xPos <= boundaryRight) {
+      desktopWindow.style.transform = 'translate3d(' + xPos + 'px, ' + yPos + 'px, 0)'
+    } else {
+      // this.dragStop()
+    }
+
+    /* desktopWindow.style.transform = 'translate3d(' + xPos + 'px, ' + yPos + 'px, 0)' */
   }
 
   closeWindow (e) {
@@ -306,6 +357,7 @@ export default class WindowContainer extends window.HTMLElement {
       // this._yOffset = 0
       // this._xOffset = 0
       this._maximized = true
+      this.zIndex = 999
     } else {
       this.shadowRoot.querySelector('div.windowContainer').style.borderRadius = '7px 7px 2px 2px'
       this.shadowRoot.querySelector('div.windowContainer').style.border = '1px solid #adadad'
@@ -314,11 +366,16 @@ export default class WindowContainer extends window.HTMLElement {
       this.shadowRoot.querySelector('div.windowContainer').style.width = this._restoreWidth + 'px'
       this.shadowRoot.querySelector('div.windowContainer').style.transform = 'translate3d(' + this._initialX + 'px, ' + this._initialY + 'px, 0)'
       this._maximized = false
+      // this.zIndex = 1
     }
   }
 
   minimizeWindow (e) {
-
+    /* const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0) */
+    const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0)
+    console.log('MINI')
+    this.shadowRoot.querySelector('div.windowContainer').classList.add('minimized')
+    this.shadowRoot.querySelector('div.windowContainer').style.transform = 'translate3d(' + 0 + 'px, ' + vh + 'px, 0)'
   }
 
   subscribeListeners () {

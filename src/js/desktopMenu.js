@@ -9,6 +9,7 @@ div#menu {
     background: rgba(0, 0, 0, 0.5);
     z-index: 1;
     display: flex;
+    user-select: none;
 }
 </style>
 <div id="menu">
