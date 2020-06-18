@@ -1,5 +1,7 @@
 const template = document.createElement('template')
 template.innerHTML = `
+<head>
+<link rel="stylesheet" href="../css/font-awesome-4.7.0/css/font-awesome.css">
 <style>
 div.chatContainer {
     width: 100%;
@@ -14,20 +16,47 @@ div.chatContainer {
     flex-direction: column;
     margin: 0;
     padding: 0;
+    /*border-radius: 0px 0px 7px 7px;*/
 }
 
 div.messageContainer {
     width: calc(100% - 10px);
-    height: calc(100% - 80px);
+    height: calc(100% - 90px);
     /*background-color: red;*/
 }
 
 div.inputContainer {
   width: calc(100% - 10px);
-  height: 80px;
-  /*background-color: blue;*/
+  height: 120px;
+  margin: 0;
+  padding: 0;
+  background-color: none;
   display: flex;
+  flex-direction: column;
   justify-content: center;
+  align-items: center;
+  align-content: center;
+}
+
+div.inputContainer .actions {
+  width: 100%;
+  height: 30px;
+  margin-top: 5px;
+  font-size: 1.2rem;
+  display: grid;
+  grid-template-columns: 50% 50%;
+}
+
+div.inputContainer .settings {
+  display: flex;
+  padding-left: 10px;
+}
+
+div.inputContainer .senders {
+  display: flex;
+  justify-content: flex-end;
+  background-color: none;
+  padding-right: 10px;
 }
 
 ul.messageList {
@@ -37,11 +66,11 @@ ul.messageList {
 }
 
 ul.messageList li {
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     margin: 0;
     padding: 0;
-    display: flex;
-    flex-direction: row;
+    /*display: flex;
+    flex-direction: row;*/
 }
 
 .sender {
@@ -54,16 +83,22 @@ ul.messageList li {
 }
 
 div.inputContainer form {
-  width: calc(100% - 10px);
+  width: 100%;
+  height: calc(100% - 32px);
   margin: 0;
   padding: 0;
+}
+
+div.inputContainer .inputContent {
+  width: calc(100% - 12px);
+  height: calc(100% - 12px);
 }
 
 div.inputContainer textarea {
   font-family: 'Roboto', sans-serif;
   padding: 5px;
   width: calc(100% - 10px);
-  height: calc(100% - 20px);
+  height: calc(100% - 10px);
   border: 1px solid #222222;
   border-radius: 4px;
   background-color: #111111;
@@ -74,10 +109,68 @@ div.inputContainer textarea {
 
 div.inputContainer textarea:focus {
   border: 1px solid #222222;
-  border-radius: 4px;
+  border-radius: 6px;
   outline: none;
 }
+
+div.inputContainer input {
+  font-family: 'Roboto', sans-serif;
+  padding: 5px;
+  width: calc(100% - 10px);
+  height: 1.0rem;
+  border: 1px solid #222222;
+  border-radius: 4px;
+  background-color: #111111;
+  font-size: 1.0rem;
+  color: #B9B9B9;
+  resize: none;
+}
+
+div.inputContainer input:focus {
+  border: 1px solid #222222;
+  border-radius: 6px;
+  outline: none;
+}
+
+button {
+  height: 24px;
+  /*width: 24px;*/
+  background-color: rgba(0,0,0,0);
+  box-shadow: 0px 0px 0px transparent;
+  border: 0px solid transparent;
+  border-radius: 12px;
+  text-shadow: 0px 0px 0px transparent;
+  padding: 0;
+  margin: 0;
+  color: #B9B9B9;
+  text-align: center;
+  font-size: 1.2rem;
+}
+
+button:focus {
+  background-color: rgba(255,255,255, 0);
+  box-shadow: 0px 0px 0px transparent;
+  border: 0px solid transparent;
+  outline: 0;
+  text-shadow: 0px 0px 0px transparent;
+  padding: 0;
+  color: #B9B9B9;
+  text-align: center;
+}
+
+button:hover {
+  color: #ffffff;
+}
+
+button:active {
+  color: #E87288;
+}
+
+button#send {
+  
+}
 </style>
+</head>
 <div class="chatContainer">
     <div class="messageContainer">
     <!--JAG CHATTAR SOM EN GUD-->
@@ -85,9 +178,18 @@ div.inputContainer textarea:focus {
     <ul>
     </div>
     <div class="inputContainer">
-      <form>
-        <textarea></textarea>
-      </form>
+        <div class="inputContent">
+        <input type="text" placeholder="Please enter username.."></input>
+        <textarea id="msgInput" placeholder="Write something.."></textarea>
+        </div>
+        <div class="actions">
+          <div class="settings">
+            <button id="settings"><i class="fa fa-cog"></i></button>
+          </div>
+          <div class="senders">
+            <button id="send"><i class="fa fa-paper-plane"></i></button>
+          </div>
+        </div>
     <div>
 </div>
 `
@@ -106,6 +208,8 @@ export default class ChatApplication extends window.HTMLElement {
     this.subscribeListeners()
     // this.testMessage()
     this.initializeChat()
+
+    console.log(this.checkActiveUser())
   }
 
   disconnectedCallback () {
@@ -116,10 +220,38 @@ export default class ChatApplication extends window.HTMLElement {
   subscribeListeners () {
     this._websocket.addEventListener('message', (e) => this.receiveMessage(e))
     this._websocket.addEventListener('open', (e) => this.testMessage(e))
+    this.shadowRoot.getElementById('msgInput').addEventListener('keypress', (e) => this.enterMessage(e))
+    this.shadowRoot.getElementById('send').addEventListener('click', (e) => this.enterMessage(e))
+    this.shadowRoot.getElementById('settings').addEventListener('click', (e) => this.toggleSettings(e))
   }
 
   unsubscribeListeners () {
     this._websocket.removeEventListener('message', (e) => this.receiveMessage(e))
+    this._websocket.removeEventListener('open', (e) => this.testMessage(e))
+    this.shadowRoot.getElementById('msgInput').removeEventListener('keypress', (e) => this.enterMessage(e))
+    this.shadowRoot.getElementById('send').removeEventListener('click', (e) => this.enterMessage(e))
+    this.shadowRoot.getElementById('settings').removeEventListener('click', (e) => this.toggleSettings(e))
+  }
+
+  enterMessage (e) {
+    if (!e.shiftKey && (e.key === 'Enter' || e.button === 0) && this.shadowRoot.getElementById('msgInput').value.trim() !== '') {
+      const msgText = this.shadowRoot.getElementById('msgInput').value.trim()
+      console.log(msgText)
+      const message = {
+        type: 'message',
+        data: msgText,
+        username: 'MyFancyUsername',
+        channel: 'my, not so secret, channel',
+        key: 'eDBE76deU7L0H9mEBgxUKVR0VCnq0XBd'
+      }
+      this.shadowRoot.getElementById('msgInput').value = ''
+      this.shadowRoot.getElementById('msgInput').blur()
+      this.sendMessage(message)
+    }
+  }
+
+  toggleSettings (e) {
+
   }
 
   testMessage () {
@@ -130,7 +262,7 @@ export default class ChatApplication extends window.HTMLElement {
       channel: 'my, not so secret, channel',
       key: 'eDBE76deU7L0H9mEBgxUKVR0VCnq0XBd'
     }
-    this._websocket.send(JSON.stringify(testMsg))
+    this.sendMessage(testMsg)
   }
 
   displayMessage (data) {
@@ -155,6 +287,10 @@ export default class ChatApplication extends window.HTMLElement {
     console.log('Msg from server: ' + e.data)
   }
 
+  sendMessage (data) {
+    this._websocket.send(JSON.stringify(data))
+  }
+
   initializeChat () {
     const msg = {
       username: 'Chatterize',
@@ -166,6 +302,15 @@ export default class ChatApplication extends window.HTMLElement {
     }
     this.displayMessage(msg)
     this.displayMessage(msg2)
+
+    if (!this.checkActiveUser()) {
+      this.shadowRoot.getElementById('msgInput').style.display = 'none'
+    }
+  }
+
+  checkActiveUser () {
+    const user = window.localStorage.getItem('username')
+    return user === ''
   }
 }
 

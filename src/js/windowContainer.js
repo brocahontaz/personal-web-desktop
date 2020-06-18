@@ -7,7 +7,7 @@ div.windowContainer {
     width: 500px;
     height: 500px;
     /*background: rgba(128, 128, 128, 0.5);*/
-    border-radius: 7px 7px 2px 2px;
+    border-radius: 7px 7px 0px 0px;
     position: absolute;
     top: 0px;
     left: 0px;
@@ -69,6 +69,7 @@ div.content {
   width: 100%;
   height: calc(100% - 30px);
   background: rgba(128, 128, 128, 0.5);
+  /*border-radius: 0px 0px 7px 7px;*/
 }
 
 span.applicationName {
