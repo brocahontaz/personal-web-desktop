@@ -92,6 +92,9 @@ div.inputContainer form {
 div.inputContainer .inputContent {
   width: calc(100% - 12px);
   height: calc(100% - 12px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
 }
 
 div.inputContainer textarea {
@@ -179,7 +182,8 @@ button#send {
     </div>
     <div class="inputContainer">
         <div class="inputContent">
-        <input type="text" placeholder="Please enter username.."></input>
+        <input type="text" id="username" placeholder="Please enter username..">
+        <input type="text" id="channel" placeholder="Please enter channel..">
         <textarea id="msgInput" placeholder="Write something.."></textarea>
         </div>
         <div class="actions">
@@ -187,6 +191,7 @@ button#send {
             <button id="settings"><i class="fa fa-cog"></i></button>
           </div>
           <div class="senders">
+            <button id="save"><i class="fa fa-check"></i></button>
             <button id="send"><i class="fa fa-paper-plane"></i></button>
           </div>
         </div>
@@ -202,14 +207,27 @@ export default class ChatApplication extends window.HTMLElement {
     /* this.shadowRoot.querySelector('h1').innerText = this.getAttribute('name') */
     this._websocket = new window.WebSocket('ws://vhost3.lnu.se:20080/socket/')
     this._apikey = 'eDBE76deU7L0H9mEBgxUKVR0VCnq0XBd'
+    this._username = window.localStorage.getItem('username') || ''
+    this._username = window.localStorage.getItem('username') || ''
+    this._channel = window.localStorage.getItem('channel') || 'testchannel'
+    this._settingsActive = false
+    this._titleUpdate = new window.CustomEvent('titleUpdate', {
+      bubbles: true,
+      cancelable: true,
+      detail: { title: this._channel }
+    })
   }
 
   connectedCallback () {
     this.subscribeListeners()
     // this.testMessage()
     this.initializeChat()
-
+    console.log(this.parentElement.parentElement.querySelector('.applicationTitle'))
     console.log(this.checkActiveUser())
+
+    if (!this._channel || this._channel !== '') {
+      this.dispatchEvent(this._titleUpdate)
+    }
   }
 
   disconnectedCallback () {
@@ -217,20 +235,28 @@ export default class ChatApplication extends window.HTMLElement {
     this._websocket.close()
   }
 
+  attributeChangedCallback (name, oldValue, newValue) {
+    this.updateApp()
+  }
+
+  static get observedAttributes () { return ['channel'] }
+
   subscribeListeners () {
     this._websocket.addEventListener('message', (e) => this.receiveMessage(e))
-    this._websocket.addEventListener('open', (e) => this.testMessage(e))
+    /* this._websocket.addEventListener('open', (e) => this.connectedMessage(e)) */
     this.shadowRoot.getElementById('msgInput').addEventListener('keypress', (e) => this.enterMessage(e))
     this.shadowRoot.getElementById('send').addEventListener('click', (e) => this.enterMessage(e))
     this.shadowRoot.getElementById('settings').addEventListener('click', (e) => this.toggleSettings(e))
+    this.shadowRoot.getElementById('save').addEventListener('click', (e) => this.saveSettings(e))
   }
 
   unsubscribeListeners () {
     this._websocket.removeEventListener('message', (e) => this.receiveMessage(e))
-    this._websocket.removeEventListener('open', (e) => this.testMessage(e))
+    /* this._websocket.removeEventListener('open', (e) => this.connectedMessage(e)) */
     this.shadowRoot.getElementById('msgInput').removeEventListener('keypress', (e) => this.enterMessage(e))
     this.shadowRoot.getElementById('send').removeEventListener('click', (e) => this.enterMessage(e))
     this.shadowRoot.getElementById('settings').removeEventListener('click', (e) => this.toggleSettings(e))
+    this.shadowRoot.getElementById('save').removeEventListener('click', (e) => this.saveSettings(e))
   }
 
   enterMessage (e) {
@@ -240,9 +266,9 @@ export default class ChatApplication extends window.HTMLElement {
       const message = {
         type: 'message',
         data: msgText,
-        username: 'MyFancyUsername',
-        channel: 'my, not so secret, channel',
-        key: 'eDBE76deU7L0H9mEBgxUKVR0VCnq0XBd'
+        username: this._username,
+        channel: this._channel,
+        key: this._apikey
       }
       this.shadowRoot.getElementById('msgInput').value = ''
       this.shadowRoot.getElementById('msgInput').blur()
@@ -251,7 +277,18 @@ export default class ChatApplication extends window.HTMLElement {
   }
 
   toggleSettings (e) {
-
+    if (!this._settingsActive) {
+      this.shadowRoot.getElementById('msgInput').style.display = 'none'
+      this.shadowRoot.getElementById('send').style.display = 'none'
+      this.shadowRoot.getElementById('settings').style.display = 'block'
+      this.shadowRoot.getElementById('save').style.display = 'block'
+      this.shadowRoot.getElementById('username').style.display = 'block'
+      this.shadowRoot.getElementById('channel').style.display = 'block'
+      this._settingsActive = true
+    } else {
+      this.displayMessageInput()
+      this._settingsActive = false
+    }
   }
 
   testMessage () {
@@ -280,8 +317,13 @@ export default class ChatApplication extends window.HTMLElement {
 
   receiveMessage (e) {
     const receivedData = JSON.parse(e.data)
-    if (receivedData.type === 'message' || receivedData.type === 'notification') {
+    if ((receivedData.type === 'message' && receivedData.channel === this._channel) || receivedData.type === 'notification') {
       this.displayMessage(receivedData)
+    }
+    if (receivedData.type === 'notification') {
+      if (this.checkActiveUser()) {
+        this.connectedMessage()
+      }
     }
 
     console.log('Msg from server: ' + e.data)
@@ -304,13 +346,76 @@ export default class ChatApplication extends window.HTMLElement {
     this.displayMessage(msg2)
 
     if (!this.checkActiveUser()) {
-      this.shadowRoot.getElementById('msgInput').style.display = 'none'
+      this.displaySettings()
+    } else {
+      this.displayMessageInput()
+      this.shadowRoot.getElementById('username').value = this._username
+      this.shadowRoot.getElementById('channel').value = this._channel
     }
+  }
+
+  connectedMessage (e) {
+    const msg = {
+      username: 'Chatterize',
+      data: 'Connected to channel ' + this._channel + ', as user ' + this._username
+    }
+
+    this.displayMessage(msg)
+  }
+
+  displaySettings () {
+    this.shadowRoot.getElementById('msgInput').style.display = 'none'
+    this.shadowRoot.getElementById('send').style.display = 'none'
+    this.shadowRoot.getElementById('settings').style.display = 'none'
+    this.shadowRoot.getElementById('save').style.display = 'block'
+    this.shadowRoot.getElementById('username').style.display = 'block'
+    this.shadowRoot.getElementById('channel').style.display = 'block'
+  }
+
+  displayMessageInput (channel) {
+    this.shadowRoot.getElementById('msgInput').style.display = 'block'
+    this.shadowRoot.getElementById('send').style.display = 'block'
+    this.shadowRoot.getElementById('settings').style.display = 'block'
+    this.shadowRoot.getElementById('save').style.display = 'none'
+    this.shadowRoot.getElementById('username').style.display = 'none'
+    this.shadowRoot.getElementById('channel').style.display = 'none'
+  }
+
+  displayChannelPicker () {
+    this.shadowRoot.getElementById('msgInput').style.display = 'none'
+    this.shadowRoot.getElementById('send').style.display = 'none'
+    this.shadowRoot.getElementById('settings').style.display = 'none'
+    this.shadowRoot.getElementById('save').style.display = 'block'
+    this.shadowRoot.getElementById('username').style.display = 'none'
+    this.shadowRoot.getElementById('channel').style.display = 'block'
   }
 
   checkActiveUser () {
     const user = window.localStorage.getItem('username')
-    return user === ''
+    console.log(window.localStorage.getItem('username'))
+    return user && user !== '' && this._username && this._username !== ''
+  }
+
+  saveSettings (e) {
+    const username = this.shadowRoot.getElementById('username').value.trim()
+    const channel = this.shadowRoot.getElementById('channel').value.trim()
+
+    if (username !== '' && channel !== '') {
+      window.localStorage.setItem('username', username)
+      window.localStorage.setItem('channel', channel)
+      this._channel = channel
+      this._username = username
+      this.shadowRoot.getElementById('username').value = username
+      this.shadowRoot.getElementById('channel').value = channel
+      this.displayMessageInput(channel)
+      this.connectedMessage()
+      const dispatcher = this._titleUpdate = new window.CustomEvent('titleUpdate', {
+        bubbles: true,
+        cancelable: true,
+        detail: { title: this._channel }
+      })
+      this.dispatchEvent(dispatcher)
+    }
   }
 }
 

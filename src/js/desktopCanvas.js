@@ -75,6 +75,12 @@ export default class Desktop extends window.HTMLElement {
 
   }
 
+  updateWindowTitle (windowID) {
+    console.log(windowID)
+    console.log(document.getElementById(windowID))
+    document.getElementById(windowID).updateTitle('test')
+  }
+
   setOverlap () {
     if (this.shadowRoot.getElementById('canvas').hasChildNodes()) {
       for (let i = 0; i < this.shadowRoot.getElementById('canvas').children.length; i++) {

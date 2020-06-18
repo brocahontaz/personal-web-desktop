@@ -121,7 +121,8 @@ button:active {
     <div class="topbar">
       <div class="applicationHeader">
         <img src="/image/monster.png" class="applicationIcon">
-        <span class="applicationName">Application</span>
+        <span class="applicationName"></span>
+        <span class="applicationTitle"></span>
       </div>
       <div class="windowButtons">
         <button id="minButton"><i class="fa fa-window-minimize"></i></button>
@@ -225,7 +226,14 @@ export default class WindowContainer extends window.HTMLElement {
     this.shadowRoot.querySelector('.applicationIcon').setAttribute('src', this._icon)
     this.shadowRoot.querySelector('.applicationName').innerHTML = this._fullname
     const app = document.createElement(this._appname)
+    /* app.setAttribute('windowID', this.id) */
     this.shadowRoot.querySelector('div.content').appendChild(app)
+  }
+
+  updateTitle (e) {
+    this.shadowRoot.querySelector('.applicationTitle').innerHTML = ' - ' + e.detail.title
+    e.stopPropagation()
+    e.cancelBubble = true
   }
 
   jump (step, row) {
@@ -416,6 +424,8 @@ export default class WindowContainer extends window.HTMLElement {
     this.shadowRoot.getElementById('closeButton').addEventListener('click', (e) => this.closeWindow(e), false)
     this.shadowRoot.getElementById('maxButton').addEventListener('click', (e) => this.maximizeWindowToggle(e), false)
     this.shadowRoot.getElementById('minButton').addEventListener('click', (e) => this.minimizeWindow(e), false)
+
+    this.shadowRoot.addEventListener('titleUpdate', (e) => this.updateTitle(e))
   }
 
   unsubscribeListeners () {
@@ -432,6 +442,8 @@ export default class WindowContainer extends window.HTMLElement {
     this.shadowRoot.getElementById('closeButton').removeEventListener('click', (e) => this.closeWindow(e))
     this.shadowRoot.getElementById('maxButton').removeEventListener('click', (e) => this.maximizeWindowToggle(e), false)
     this.shadowRoot.getElementById('minButton').removeEventListener('click', (e) => this.minimizeWindow(e), false)
+
+    this.shadowRoot.removeEventListener('titleUpdate', (e) => this.updateTitle(e))
   }
 }
 

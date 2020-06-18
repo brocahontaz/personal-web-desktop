@@ -38,6 +38,10 @@ export default class MenuIcon extends window.HTMLElement {
     this._appname = this.getAttribute('appname')
     this._fullname = this.getAttribute('fullname')
     this._icon = this.getAttribute('src')
+    this.__clickEvent = new window.CustomEvent('clickEvent', {
+      bubbles: true,
+      detail: { icon: () => this.icon, fullname: () => this.fullname, appname: () => this.appname }
+    })
   }
 
   get appname () {
