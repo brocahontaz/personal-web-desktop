@@ -164,7 +164,8 @@ export default class WindowContainer extends window.HTMLElement {
     this._restoreWidth = 500
     this._restoreHeight = 500
     this._icon = this.getAttribute('icon')
-    this._name = this.getAttribute('name')
+    this._fullname = this.getAttribute('fullname')
+    this._appname = this.getAttribute('appname')
 
     this.shadowRoot.querySelector('.applicationIcon').setAttribute('src', this._icon)
     this.shadowRoot.querySelector('.applicationName').innerHTML = this._name
@@ -189,16 +190,16 @@ export default class WindowContainer extends window.HTMLElement {
     this.updateApp()
   }
 
-  static get observedAttributes () { return ['icon', 'name'] }
+  static get observedAttributes () { return ['icon', 'fullname', 'appname'] }
 
-  set setId (id) {
+  set id (id) {
     this._windowID = id
     /* .log('TESTID' + this.shadowRoot.querySelector('div.window').id) */
     this.shadowRoot.querySelector('div.windowContainer').id = this._windowID
     /* console.log(windowID) */
   }
 
-  get getId () {
+  get id () {
     return this._windowID
   }
 
@@ -217,11 +218,12 @@ export default class WindowContainer extends window.HTMLElement {
 
   updateApp () {
     this._icon = this.getAttribute('icon')
-    this._name = this.getAttribute('name')
-
+    this._fullname = this.getAttribute('fullname')
+    this._appname = this.getAttribute('appname')
+    console.log()
     this.shadowRoot.querySelector('.applicationIcon').setAttribute('src', this._icon)
-    this.shadowRoot.querySelector('.applicationName').innerHTML = this._name
-    const app = document.createElement(this._name)
+    this.shadowRoot.querySelector('.applicationName').innerHTML = this._fullname
+    const app = document.createElement(this._appname)
     this.shadowRoot.querySelector('div.content').appendChild(app)
   }
 

@@ -38,7 +38,7 @@ export default class Desktop extends window.HTMLElement {
     /* this.shadowRoot.querySelector('h1').innerText = this.getAttribute('name') */
   }
 
-  addWindow (icon, name) {
+  addWindow (icon, fullname, appname) {
     this.setOverlap()
 
     if (parseInt(jumps) >= 20) {
@@ -49,12 +49,15 @@ export default class Desktop extends window.HTMLElement {
     windowID++
     jumps++
     const appWindow = document.createElement('window-container')
-    appWindow.setId = windowID
-    appWindow.setIcon = icon
-    appWindow.setName = name
+    appWindow.id = windowID
+    appWindow.icon = icon
+    appWindow.appname = appname
+    appWindow.fullname = fullname
 
     appWindow.setAttribute('icon', icon)
-    appWindow.setAttribute('name', name)
+    appWindow.setAttribute('fullname', fullname)
+    console.log(fullname)
+    appWindow.setAttribute('appname', appname)
     // appWindow.zIndex = 999
     appWindow.jump(jumps, row)
     if (this.checkMaximized()) {
