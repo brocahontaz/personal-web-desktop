@@ -36,14 +36,21 @@ export default class Desktop extends window.HTMLElement {
     this.attachShadow({ mode: 'open' })
     this.shadowRoot.appendChild(template.content.cloneNode(true))
     /* this.shadowRoot.querySelector('h1').innerText = this.getAttribute('name') */
+    this._chatAppSet = new window.Set()
+    this._memoryAppSet = new window.Set()
+    this._weatherAppSet = new window.Set()
   }
 
   connectedCallback () {
     this.shadowRoot.addEventListener('menuIconClick', (e) => this.addWindow(e))
+    this.shadowRoot.addEventListener('displayContextMenu', (e) => this.displayContextMenu(e))
+    this.shadowRoot.addEventListener('closeEvent', (e) => this.deleteWindow(e))
   }
 
   disconnectedCallback () {
     this.shadowRoot.removeEventListener('menuIconClick', (e) => this.addWindow(e))
+    this.shadowRoot.removeEventListener('displayContextMenu', (e) => this.displayContextMenu(e))
+    this.shadowRoot.removeEventListener('closeEvent', (e) => this.deleteWindow(e))
   }
 
   addWindow (e) {
@@ -61,14 +68,14 @@ export default class Desktop extends window.HTMLElement {
     windowID++
     jumps++
     const appWindow = document.createElement('window-container')
-    appWindow.id = windowID
-    appWindow.icon = icon
-    appWindow.appname = appname
-    appWindow.fullname = fullname
+    // appWindow.id = windowID
+    // appWindow.icon = icon
+    // appWindow.appname = appname
+    // appWindow.fullname = fullname
 
+    appWindow.setAttribute('id', windowID)
     appWindow.setAttribute('icon', icon)
     appWindow.setAttribute('fullname', fullname)
-    console.log(fullname)
     appWindow.setAttribute('appname', appname)
     // appWindow.zIndex = 999
     appWindow.jump(jumps, row)
@@ -79,10 +86,55 @@ export default class Desktop extends window.HTMLElement {
     this.shadowRoot.getElementById('canvas').appendChild(appWindow) /* .querySelector('div') */
     e.stopPropagation()
     e.cancelBubble = true
+
+    this.addToList(appWindow.appname, appWindow.id)
+    console.log(this._chatAppSet)
   }
 
-  deleteWindow () {
+  addToList (name, id) {
+    console.log('ADD')
+    console.log(name)
+    switch (name) {
+      case 'chat-application':
+        this._chatAppSet.add(windowID)
+        break
+      case 'memory-application':
+        this._memoryAppSet.add(windowID)
+        break
+      case 'weather-application':
+        this._weatherAppSet.add(windowID)
+        break
+    }
+  }
 
+  removeFromList (name, id) {
+    console.log('SWITCH')
+    switch (name) {
+      case 'chat-application':
+        console.log('CASE')
+        this._chatAppSet.delete(windowID)
+        break
+      case 'memory-application':
+        this._memoryAppSet.delete(windowID)
+        break
+      case 'weather-application':
+        this._weatherAppSet.delete(windowID)
+        break
+    }
+  }
+
+  displayContextMenu (e) {
+    e.stopPropagation()
+    e.cancelBubble = true
+    console.log(e.target)
+    e.target.showContext()
+  }
+
+  deleteWindow (e) {
+    console.log('DElETE WINDOW' + e.detail.name)
+    e.stopPropagation()
+    e.cancelBubble = true
+    this.removeFromList(e.detail.name, e.detail.id)
   }
 
   minimizeWindow () {

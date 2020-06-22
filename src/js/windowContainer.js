@@ -153,7 +153,6 @@ export default class WindowContainer extends window.HTMLElement {
     this.shadowRoot.appendChild(template.content.cloneNode(true))
     /* console.log(windowID) */
     /* this.shadowRoot.addEventListener('click', () => this.dragStart(), false) */
-    this._windowID = 0
     this._zIndex = 1
     this._active = false
     this._initialY = 0
@@ -165,9 +164,15 @@ export default class WindowContainer extends window.HTMLElement {
     this._maximized = false
     this._restoreWidth = 500
     this._restoreHeight = 500
+    this._windowID = this.getAttribute('id')
     this._icon = this.getAttribute('icon')
     this._fullname = this.getAttribute('fullname')
     this._appname = this.getAttribute('appname')
+    this._closeEvent = new window.CustomEvent('closeEvent', {
+      bubbles: true,
+      cancelable: true,
+      detail: { id: this._windowID, name: this._appname }
+    })
 
     this.shadowRoot.querySelector('.applicationIcon').setAttribute('src', this._icon)
     this.shadowRoot.querySelector('.applicationName').innerHTML = this._name
@@ -192,13 +197,19 @@ export default class WindowContainer extends window.HTMLElement {
     this.updateApp()
   }
 
-  static get observedAttributes () { return ['icon', 'fullname', 'appname'] }
+  static get observedAttributes () { return ['id', 'icon', 'fullname', 'appname'] }
 
   set id (id) {
     this._windowID = id
     /* .log('TESTID' + this.shadowRoot.querySelector('div.window').id) */
     this.shadowRoot.querySelector('div.windowContainer').id = this._windowID
     /* console.log(windowID) */
+
+    this._closeEvent = new window.CustomEvent('closeEvent', {
+      bubbles: true,
+      cancelable: true,
+      detail: { id: this._windowID, name: this._appname }
+    })
   }
 
   get id () {
@@ -212,6 +223,14 @@ export default class WindowContainer extends window.HTMLElement {
 
   get zIndex () {
     return this._zIndex
+  }
+
+  get appname () {
+    return this._appname
+  }
+
+  get fullname () {
+    return this._fullname
   }
 
   get isMaximized () {
@@ -228,6 +247,11 @@ export default class WindowContainer extends window.HTMLElement {
     const app = document.createElement(this._appname)
     /* app.setAttribute('windowID', this.id) */
     this.shadowRoot.querySelector('div.content').appendChild(app)
+    this._closeEvent = new window.CustomEvent('closeEvent', {
+      bubbles: true,
+      cancelable: true,
+      detail: { id: this._windowID, name: this._appname }
+    })
   }
 
   updateTitle (e) {
@@ -370,6 +394,7 @@ export default class WindowContainer extends window.HTMLElement {
   }
 
   closeWindow (e) {
+    this.dispatchEvent(this._closeEvent)
     this.remove()
   }
 
@@ -420,9 +445,9 @@ export default class WindowContainer extends window.HTMLElement {
     this.addEventListener('blur', () => this.unFocusWindow(), false)
 
     // Add eventlisteners for drag
-    this.shadowRoot.getElementById(this._windowID).querySelector('div.topbar .applicationHeader').addEventListener('mousedown', (e) => this.dragStart(e), false)
+    this.shadowRoot.querySelector('div.topbar .applicationHeader').addEventListener('mousedown', (e) => this.dragStart(e), false)
     document.addEventListener('mousemove', (e) => this.drag(e), false)
-    this.shadowRoot.getElementById(this._windowID).querySelector('div.topbar .applicationHeader').addEventListener('mouseup', (e) => this.dragStop(e), false)
+    this.shadowRoot.querySelector('div.topbar .applicationHeader').addEventListener('mouseup', (e) => this.dragStop(e), false)
 
     // Add eventlisteners for action buttons
     this.shadowRoot.getElementById('closeButton').addEventListener('click', (e) => this.closeWindow(e), false)
@@ -438,9 +463,9 @@ export default class WindowContainer extends window.HTMLElement {
     this.removeEventListener('blur', () => this.unFocusWindow())
 
     // Remove eventlisteners for drag
-    this.shadowRoot.getElementById(this._windowID).querySelector('div.topbar .applicationHeader').removeEventListener('mousedown', (e) => this.dragStart(e))
+    this.shadowRoot.querySelector('div.topbar .applicationHeader').removeEventListener('mousedown', (e) => this.dragStart(e))
     document.removeEventListener('mousemove', (e) => this.drag(e))
-    this.shadowRoot.getElementById(this._windowID).querySelector('div.topbar .applicationHeader').removeEventListener('mouseup', (e) => this.dragStop(e))
+    this.shadowRoot.querySelector('div.topbar .applicationHeader').removeEventListener('mouseup', (e) => this.dragStop(e))
 
     // Remove eventlisteners for action buttons
     this.shadowRoot.getElementById('closeButton').removeEventListener('click', (e) => this.closeWindow(e))
