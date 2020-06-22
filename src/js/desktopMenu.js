@@ -10,6 +10,7 @@ div#menu {
     z-index: 1;
     display: flex;
     user-select: none;
+    z-index: 1000;
 }
 </style>
 <div id="menu">

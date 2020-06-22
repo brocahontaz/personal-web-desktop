@@ -231,7 +231,7 @@ export default class WindowContainer extends window.HTMLElement {
   }
 
   updateTitle (e) {
-    this.shadowRoot.querySelector('.applicationTitle').innerHTML = ' - ' + e.detail.title
+    this.shadowRoot.querySelector('.applicationTitle').innerText = ' - ' + e.detail.title
     e.stopPropagation()
     e.cancelBubble = true
   }
@@ -311,8 +311,10 @@ export default class WindowContainer extends window.HTMLElement {
       const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
       const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0)
 
-      if (e.clientY < 0 || e.clientY > vh || e.clientX < 0 || e.clientX > vw + 10) {
-        this.dragStop(e)
+      if (e.clientY <= 0 || e.clientY >= vh || e.clientX <= 0 || e.clientX >= vw + 10) {
+        // this.dragStop(e)
+        this._yOffset = 0
+        this._xOffset = 0
       }
 
       this.move(this._currentX, this._currentY)
@@ -328,6 +330,8 @@ export default class WindowContainer extends window.HTMLElement {
       this._active = false
       this._initialY = this._currentY
       this._initialX = this._currentX
+      // this._yOffset = this._currentY
+      // this._xOffset = this._currentX
     }
   }
 

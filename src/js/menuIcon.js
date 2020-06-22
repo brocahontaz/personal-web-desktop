@@ -38,9 +38,15 @@ export default class MenuIcon extends window.HTMLElement {
     this._appname = this.getAttribute('appname')
     this._fullname = this.getAttribute('fullname')
     this._icon = this.getAttribute('src')
-    this.__clickEvent = new window.CustomEvent('clickEvent', {
+    this._clickEvent = new window.CustomEvent('menuIconClick', {
       bubbles: true,
-      detail: { icon: () => this.icon, fullname: () => this.fullname, appname: () => this.appname }
+      cancelable: true,
+      detail: { icon: this._icon, fullname: this._fullname, appname: this._appname }
+    })
+    this._contextMenuEvent = new window.CustomEvent('displayContextMenu', {
+      bubbles: true,
+      cancelable: true,
+      detail: {}
     })
   }
 
@@ -58,16 +64,32 @@ export default class MenuIcon extends window.HTMLElement {
 
   connectedCallback () {
     console.log('connected icon')
-    this.shadowRoot.addEventListener('click', () => this.openWindow())
+    this.shadowRoot.addEventListener('click', (e) => this.onClick(e))
+    this.shadowRoot.addEventListener('contextmenu', (e) => this.displayContextMenu(e))
   }
 
   disconnectedCallback () {
-    this.shadowRoot.removeEventListener()
+    this.shadowRoot.removeEventListener('click', (e) => this.onClick(e))
   }
 
-  openWindow () {
+  onClick (e) {
+    if (e.button === 0) {
+      this.openWindow(e)
+    } else if (e.button === 2) {
+      this.displayContextMenu(e)
+    }
+  }
+
+  openWindow (e) {
     console.log('HEJ')
-    document.querySelector('desktop-canvas').addWindow(this.icon, this.fullname, this.appname)
+    // document.querySelector('desktop-canvas').addWindow(this.icon, this.fullname, this.appname)
+    this.dispatchEvent(this._clickEvent)
+  }
+
+  displayContextMenu (e) {
+    e.preventDefault()
+    console.log('context')
+    this.dispatchEvent(this._contextMenuEvent)
   }
 }
 

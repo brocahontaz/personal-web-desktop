@@ -38,8 +38,20 @@ export default class Desktop extends window.HTMLElement {
     /* this.shadowRoot.querySelector('h1').innerText = this.getAttribute('name') */
   }
 
-  addWindow (icon, fullname, appname) {
+  connectedCallback () {
+    this.shadowRoot.addEventListener('menuIconClick', (e) => this.addWindow(e))
+  }
+
+  disconnectedCallback () {
+    this.shadowRoot.removeEventListener('menuIconClick', (e) => this.addWindow(e))
+  }
+
+  addWindow (e) {
     this.setOverlap()
+
+    const icon = e.detail.icon
+    const fullname = e.detail.fullname
+    const appname = e.detail.appname
 
     if (parseInt(jumps) >= 20) {
       jumps = 0
@@ -65,6 +77,8 @@ export default class Desktop extends window.HTMLElement {
     }
     // appWindow.move((row * 100), (jumps * 10))
     this.shadowRoot.getElementById('canvas').appendChild(appWindow) /* .querySelector('div') */
+    e.stopPropagation()
+    e.cancelBubble = true
   }
 
   deleteWindow () {
