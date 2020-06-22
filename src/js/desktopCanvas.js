@@ -19,6 +19,31 @@ div#canvas {
 h1 {
   color: red;
 }
+
+div.contextMenu {
+  position: absolute;
+  top: -150px;
+  width: 200px;
+  height: 150px;
+  background: rgba(0, 0, 0, 0.5);
+  border-bottom: 1px solid #000000;
+  display: none;
+  cursor: auto;
+}
+
+ul.contextList {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+ul.contextList li {
+    font-size: 0.9rem;
+    margin: 0;
+    padding: 0;
+    /*display: flex;
+    flex-direction: row;*/
+}
 </style>
 <div id="canvas">
 <slot></slot>
@@ -96,13 +121,13 @@ export default class Desktop extends window.HTMLElement {
     console.log(name)
     switch (name) {
       case 'chat-application':
-        this._chatAppSet.add(windowID)
+        this._chatAppSet.add(id)
         break
       case 'memory-application':
-        this._memoryAppSet.add(windowID)
+        this._memoryAppSet.add(id)
         break
       case 'weather-application':
-        this._weatherAppSet.add(windowID)
+        this._weatherAppSet.add(id)
         break
     }
   }
@@ -112,14 +137,27 @@ export default class Desktop extends window.HTMLElement {
     switch (name) {
       case 'chat-application':
         console.log('CASE')
-        this._chatAppSet.delete(windowID)
+        this._chatAppSet.delete(id)
         break
       case 'memory-application':
-        this._memoryAppSet.delete(windowID)
+        this._memoryAppSet.delete(id)
         break
       case 'weather-application':
-        this._weatherAppSet.delete(windowID)
+        this._weatherAppSet.delete(id)
         break
+    }
+  }
+
+  getList (name) {
+    console.log(name)
+    switch (name) {
+      case 'chat-application':
+        console.log('CASE')
+        return this._chatAppSet
+      case 'memory-game':
+        return this._memoryAppSet
+      case 'weather-app':
+        return this._weatherAppSet
     }
   }
 
@@ -127,7 +165,8 @@ export default class Desktop extends window.HTMLElement {
     e.stopPropagation()
     e.cancelBubble = true
     console.log(e.target)
-    e.target.showContext()
+    console.log(this.getList(e.detail.appname))
+    e.target.showContext(e, this.getList(e.detail.appname))
   }
 
   deleteWindow (e) {
