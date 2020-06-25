@@ -154,9 +154,9 @@ export default class Desktop extends window.HTMLElement {
       case 'chat-application':
         console.log('CASE')
         return this._chatAppSet
-      case 'memory-game':
+      case 'memory-application':
         return this._memoryAppSet
-      case 'weather-app':
+      case 'weather-application':
         return this._weatherAppSet
     }
   }
@@ -176,7 +176,7 @@ export default class Desktop extends window.HTMLElement {
     this.removeFromList(e.detail.name, e.detail.id)
   }
 
-  minimizeWindow () {
+  minimizeWindow (e) {
 
   }
 

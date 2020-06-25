@@ -1,13 +1,16 @@
 const template = document.createElement('template')
 template.innerHTML = `
+<head>
+<link rel="stylesheet" href="../css/font-awesome-4.7.0/css/font-awesome.css">
 <style>
 div {
-    width: 50px;
+    /*width: 50px;
     height: 50px;
     /*border-radius: 4px;*/
     /*background-color: white;*/
-    margin-right: 5px;
+    /*margin-right: 5px;
     /*cursor: pointer;*/
+    transition: height 5s ease-out;
 }
 /*
 div:hover {
@@ -65,11 +68,11 @@ div.contextMenu {
 }
 
 div.contextMenu span {
-  padding: 15px;
+  /*padding: 15px;*/
 }
 
 div.contextMenu span:hover {
-  background: rgba(255, 255, 255, 0.2);
+  /*background: rgba(255, 255, 255, 0.2);*/
 }
 
 div.contextMenu span .first {
@@ -84,6 +87,34 @@ div.contextMenu hr {
   /*margin-left: 25%;*/
 }
 
+div.contextMenu #showAll {
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+}
+
+div.contextMenu #showAll:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+div.contextMenu #showAll .expandIcon {
+  display: block;
+}
+
+div.contextMenu #showAll .shrinkIcon {
+  display: none;
+}
+
+div.contextMenu .collapsibleList {
+  padding: 0;
+  margin: 0;
+  display: none;
+  /*visibility: hidden;*/
+  height: 0;
+  transition: max-height 0.5s ease-out;
+  /*animation: moveup 0.5s 1;*/
+}
+
 ul.contextOptions {
     list-style-type: none;
     margin: 0;
@@ -94,7 +125,7 @@ ul.contextList {
     list-style-type: none;
     margin: 0;
     padding: 0;
-    display: none;
+    /*display: none;*/
 }
 
 ul.contextOptions li {
@@ -110,7 +141,7 @@ ul.contextOptions li:hover {
 ul.contextList li {
     font-size: 0.9rem;
     margin: 0;
-    padding: 15px 10px 10px 10px;
+    padding: 15px;
     /*display: flex;
     flex-direction: row;*/
 }
@@ -118,13 +149,72 @@ ul.contextList li {
 ul.contextList li:hover{
   background: rgba(255, 255, 255, 0.2);
 }
+
+button.expand {
+  height: 24px;
+  width: 24px;
+  background-color: rgba(0,0,0,0);
+  box-shadow: 0px 0px 0px transparent;
+  border: 0px solid transparent;
+  border-radius: 12px;
+  text-shadow: 0px 0px 0px transparent;
+  padding: 0;
+  margin: 0;
+  color: #ffffff;
+  text-align: center;
+  font-size: 0.7rem;
+}
+
+button.expand:focus {
+  background-color: rgba(255,255,255, 0);
+  box-shadow: 0px 0px 0px transparent;
+  border: 0px solid transparent;
+  outline: 0;
+  text-shadow: 0px 0px 0px transparent;
+  padding: 0;
+  color: #ffffff;
+  text-align: center;
+}
+
+button.expand:hover {
+  background-color: rgba(0,0,0, 0.5);
+}
+
+button.expand:active {
+  background-color: rgba(255,255,255, 0.5);
+}
+
+.moveup {
+  animation: moveup 0.5s;
+}
+
+.movedown {
+  animation: movedown 0.5s;
+}
+
+@keyframes moveup {
+  from { height: 0 }
+  to: { height: auto }
+}
+
+@keyframes movedown {
+  from { height: auto }
+  to { height:  0 }
+}
 </style>
+</head>
 <div>
   <div class="contextWrapper">
     <div class="contextMenu">
-      <ul class="contextList">        
-      </ul>
-      <span id="showAll">All windows</span>
+      <div id="showAll">
+        <span>All windows</span>
+        <span class="expandIcon"><i class="fa fa-expand"></i></span>
+        <span class="shrinkIcon"><i class="fa fa-compress"></i></span>
+      </div>
+      <div class="collapsibleList">
+        <ul class="contextList">        
+        </ul>
+      </div>
       <hr>
       <ul class="contextOptions">
         <li id="newWindow">New window</li>
@@ -215,6 +305,13 @@ export default class MenuIcon extends window.HTMLElement {
 
   showContext (e, list) {
     console.log(list)
+    /* this.shadowRoot.getElementById('showAll').style.display = 'block' */
+    // this.shadowRoot.querySelector('.collapsibleList').style.maxHeight = null
+    this.shadowRoot.querySelector('.collapsibleList').style.height = null
+    // this.shadowRoot.querySelector('.collapsibleList').style.visibility = 'hidden'
+    this.shadowRoot.querySelector('.collapsibleList').style.display = 'none'
+    this.shadowRoot.querySelector('.shrinkIcon').style.display = 'none'
+    this.shadowRoot.querySelector('.expandIcon').style.display = 'block'
     // list.forEach(element => this.displayWindowInContext(element))
     if (this._contextMenu) {
       this._instanceList = list
@@ -259,8 +356,29 @@ export default class MenuIcon extends window.HTMLElement {
     }
   }
 
-  showAll(e) {
-    
+  showAll (e) {
+    /* this.shadowRoot.getElementById('showAll').style.display = 'none' */
+    const list = this.shadowRoot.querySelector('.collapsibleList')
+    if (list.style.height) {
+      // list.style.maxHeight = null
+      list.style.height = null
+      // this.shadowRoot.querySelector('.collapsibleList').style.visibility = 'hidden'
+      this.shadowRoot.querySelector('.collapsibleList').style.display = 'none'
+      this.shadowRoot.querySelector('.shrinkIcon').style.display = 'none'
+      this.shadowRoot.querySelector('.expandIcon').style.display = 'block'
+      // this.shadowRoot.querySelector('.collapsibleList').classList.remove('.moveup')
+      // this.shadowRoot.querySelector('.collapsibleList').classList.add('.movedown')
+    } else {
+      // list.style.maxHeight = '500px'
+      list.style.height = 'auto'
+      // this.shadowRoot.querySelector('.collapsibleList').style.visibility = 'visible'
+      this.shadowRoot.querySelector('.collapsibleList').style.display = 'block'
+      this.shadowRoot.querySelector('.shrinkIcon').style.display = 'block'
+      this.shadowRoot.querySelector('.expandIcon').style.display = 'none'
+      // this.shadowRoot.querySelector('.collapsibleList').classList.remove('.movedown')
+      // this.shadowRoot.querySelector('.collapsibleList').classList.add('.moveup')
+    }
+    // this.shadowRoot.querySelector('.contextList').style.display = 'block'
   }
 }
 
