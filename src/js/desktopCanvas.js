@@ -70,12 +70,18 @@ export default class Desktop extends window.HTMLElement {
     this.shadowRoot.addEventListener('menuIconClick', (e) => this.addWindow(e))
     this.shadowRoot.addEventListener('displayContextMenu', (e) => this.displayContextMenu(e))
     this.shadowRoot.addEventListener('closeEvent', (e) => this.deleteWindow(e))
+    this.shadowRoot.addEventListener('closeAll', (e) => this.closeAll(e))
+    this.shadowRoot.addEventListener('minimizeAll', (e) => this.minimizeAll(e))
+    this.shadowRoot.addEventListener('restoreWindow', (e) => this.restoreWindow(e))
   }
 
   disconnectedCallback () {
     this.shadowRoot.removeEventListener('menuIconClick', (e) => this.addWindow(e))
     this.shadowRoot.removeEventListener('displayContextMenu', (e) => this.displayContextMenu(e))
     this.shadowRoot.removeEventListener('closeEvent', (e) => this.deleteWindow(e))
+    this.shadowRoot.removeEventListener('closeAll', (e) => this.closeAll(e))
+    this.shadowRoot.removeEventListener('minimizeAll', (e) => this.minimizeAll(e))
+    this.shadowRoot.addEventListener('restoreWindow', (e) => this.restoreWindow(e))
   }
 
   addWindow (e) {
@@ -109,6 +115,7 @@ export default class Desktop extends window.HTMLElement {
     }
     // appWindow.move((row * 100), (jumps * 10))
     this.shadowRoot.getElementById('canvas').appendChild(appWindow) /* .querySelector('div') */
+    appWindow.focus()
     e.stopPropagation()
     e.cancelBubble = true
 
@@ -178,6 +185,36 @@ export default class Desktop extends window.HTMLElement {
 
   minimizeWindow (e) {
 
+  }
+
+  restoreWindow (e) {
+    e.stopPropagation()
+    e.cancelBubble = true
+    const windowID = e.detail.id
+    console.log(windowID)
+    this.shadowRoot.getElementById(windowID).restoreWindow()
+  }
+
+  closeAll (e) {
+    console.log(e)
+    e.stopPropagation()
+    e.cancelBubble = true
+    const name = e.detail.appname
+    const list = this.getList(name)
+    list.forEach(element => {
+      this.removeFromList(name, element)
+      this.shadowRoot.getElementById(element).remove()
+    })
+  }
+
+  minimizeAll (e) {
+    e.stopPropagation()
+    e.cancelBubble = true
+    const name = e.detail.appname
+    const list = this.getList(name)
+    list.forEach(element => {
+      this.shadowRoot.getElementById(element).minimizeWindow()
+    })
   }
 
   updateWindowTitle (windowID) {

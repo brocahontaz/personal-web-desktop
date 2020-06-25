@@ -251,6 +251,16 @@ export default class MenuIcon extends window.HTMLElement {
       cancelable: true,
       detail: { appname: this._appname, fullname: this._fullname }
     })
+    this._minimizeAllEvent = new window.CustomEvent('minimizeAll', {
+      bubbles: true,
+      cancelable: true,
+      detail: { appname: this._appname, fullname: this._fullname }
+    })
+    this._closeAllEvent = new window.CustomEvent('closeAll', {
+      bubbles: true,
+      cancelable: true,
+      detail: { appname: this._appname, fullname: this._fullname }
+    })
   }
 
   get appname () {
@@ -270,6 +280,10 @@ export default class MenuIcon extends window.HTMLElement {
     this.shadowRoot.querySelector('.iconContainer').addEventListener('click', (e) => this.onClick(e))
     this.shadowRoot.querySelector('.iconContainer').addEventListener('contextmenu', (e) => this.displayContextMenu(e))
     this.shadowRoot.getElementById('showAll').addEventListener('click', (e) => this.showAll(e))
+    this.shadowRoot.getElementById('newWindow').addEventListener('click', (e) => this.openWindow(e))
+    this.shadowRoot.getElementById('minimizeAll').addEventListener('click', (e) => this.minimizeAll(e))
+    this.shadowRoot.getElementById('closeAll').addEventListener('click', (e) => this.closeAll(e))
+    this.shadowRoot.querySelector('.contextList').addEventListener('click', (e) => this.restoreWindow(e))
     document.addEventListener('click', (e) => this.hideContext(e))
     document.addEventListener('contextmenu', (e) => this.hideContext(e))
   }
@@ -278,6 +292,10 @@ export default class MenuIcon extends window.HTMLElement {
     this.shadowRoot.querySelector('.iconContainer').removeEventListener('click', (e) => this.onClick(e))
     this.shadowRoot.querySelector('.iconContainer').removeEventListener('contextmenu', (e) => this.displayContextMenu(e))
     this.shadowRoot.getElementById('showAll').removeEventListener('click', (e) => this.showAll(e))
+    this.shadowRoot.getElementById('newWindow').removeEventListener('click', (e) => this.openWindow(e))
+    this.shadowRoot.getElementById('minimizeAll').removeEventListener('click', (e) => this.minimizeAll(e))
+    this.shadowRoot.getElementById('closeAll').removeEventListener('click', (e) => this.closeAll(e))
+    this.shadowRoot.querySelector('.contextList').removeEventListener('click', (e) => this.restoreWindow(e))
     document.removeEventListener('click', (e) => this.hideContext(e))
     document.removeEventListener('contextmenu', (e) => this.hideContext(e))
   }
@@ -333,6 +351,7 @@ export default class MenuIcon extends window.HTMLElement {
     this._instanceList.forEach(element => {
       console.log(element)
       const listElem = document.createElement('li')
+      listElem.id = element
       listElem.innerText = element + '. ' + this._fullname
       this.shadowRoot.querySelector('.contextList').appendChild(listElem)
     })
@@ -379,6 +398,28 @@ export default class MenuIcon extends window.HTMLElement {
       // this.shadowRoot.querySelector('.collapsibleList').classList.add('.moveup')
     }
     // this.shadowRoot.querySelector('.contextList').style.display = 'block'
+  }
+
+  minimizeAll (e) {
+    this.dispatchEvent(this._minimizeAllEvent)
+  }
+
+  restoreWindow (e) {
+    const windowID = e.target.id
+    console.log(windowID)
+    const restoreEvent = new window.CustomEvent('restoreWindow', {
+      bubbles: true,
+      cancelable: true,
+      detail: { id: windowID }
+    })
+    this.dispatchEvent(restoreEvent)
+  }
+
+  closeAll (e) {
+    this.shadowRoot.querySelector('.shrinkIcon').style.display = 'none'
+    this.shadowRoot.querySelector('.expandIcon').style.display = 'block'
+    this.shadowRoot.querySelector('.contextList').innerHTML = ''
+    this.dispatchEvent(this._closeAllEvent)
   }
 }
 

@@ -440,10 +440,24 @@ export default class WindowContainer extends window.HTMLElement {
     this.shadowRoot.querySelector('div.windowContainer').style.transform = 'translate3d(' + 0 + 'px, ' + vh + 'px, 0)'
   }
 
+  restoreWindow () {
+    this.focus()
+    this.shadowRoot.querySelector('div.windowContainer').classList.remove('minimized')
+    this.shadowRoot.querySelector('div.windowContainer').style.transform = 'translate3d(' + this._initialX + 'px, ' + this._initialY + 'px, 0)'
+  }
+
   subscribeListeners () {
     // Add eventlisteners for focus
     this.addEventListener('focus', () => this.focusWindow(), false)
     this.addEventListener('blur', () => this.unFocusWindow(), false)
+
+    /* document.addEventListener('click', (e) => {
+      if (e.detail.id !== this.getAttribute('id')) {
+        console.log('HEJ FÖR FAAAN')
+        console.log(e)
+        this.unFocusWindow()
+      }
+    }) */
 
     // Add eventlisteners for drag
     this.shadowRoot.querySelector('div.applicationHeader').addEventListener('mousedown', (e) => this.dragStart(e), false)
@@ -460,7 +474,7 @@ export default class WindowContainer extends window.HTMLElement {
 
   unsubscribeListeners () {
     // Remove eventlisteners for focus
-    this.shadowRoot.removeEventListener('focus', () => this.focusWindow())
+    this.removeEventListener('focus', () => this.focusWindow())
     this.removeEventListener('blur', () => this.unFocusWindow())
 
     // Remove eventlisteners for drag
