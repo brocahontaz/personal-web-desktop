@@ -1,21 +1,27 @@
+import './memoryBrick.js'
+
 const template = document.createElement('template')
 template.innerHTML = `
 <style>
 div.memoryContainer {
     width: 100%;
     height: 100%;
-    background: #fffffF;
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 div.memoryContainer .memoryGrid {
-    width:90%;
+    width: 90%;
     height: 90%;
-    padding: 5%;
+    max-width: 800px;
+    max-height: 800px;
     display: grid;
     grid-template-columns: 25% 25% 25% 25%;
     grid-template-rows: 25% 25% 25% 25%;
     justify-items: center;
-    align-items: center
+    align-items: center;
 }
 
 div.memoryContainer .memoryGrid img {
@@ -35,17 +41,20 @@ export default class MemoryApplication extends window.HTMLElement {
     this.attachShadow({ mode: 'open' })
     this.shadowRoot.appendChild(template.content.cloneNode(true))
     this._imageArray = []
+    this._revealed = new Map()
   }
 
   connectedCallback () {
     this.populateArray(9)
     this.shuffleImages()
-    this.displayMemoryGrid()
+    this.displayMemoryGridNew()
     console.log(this._imageArray)
+
+    this.shadowRoot.addEventListener('clickBrick', (e) => this.clickBrick(e))
   }
 
   disconnectedCallback () {
-
+    this.shadowRoot.removeEventListener('clickBrick', (e) => this.clickBrick(e))
   }
 
   populateArray (images) {
@@ -70,6 +79,41 @@ export default class MemoryApplication extends window.HTMLElement {
         this.shadowRoot.querySelector('.memoryGrid').appendChild(img)
       }
     })
+  }
+
+  displayMemoryGridNew () {
+    let itr = 0
+    this._imageArray.forEach(element => {
+      if (element !== '0.png') {
+        const brick = document.createElement('memory-brick')
+        brick.setAttribute('img', element)
+        brick.id = itr++
+        console.log(brick)
+        this.shadowRoot.querySelector('.memoryGrid').appendChild(brick)
+      }
+    })
+  }
+
+  clickBrick (e) {
+    e.stopPropagation()
+    e.cancelBubble = true
+    if (this._revealed.size < 2) {
+      if (!this._revealed.delete(e.detail.id)) {
+        this._revealed.set(e.detail.id, e.detail.img)
+      }
+      console.log('map', this._revealed)
+    } else {
+      this.checkMatch()
+      this._revealed.clear()
+    }
+  }
+
+  checkMatch () {
+    const arr = this._revealed.values()
+    console.log(arr)
+    if (arr[0]) {
+
+    }
   }
 }
 
