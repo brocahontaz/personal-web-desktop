@@ -22,7 +22,10 @@ div.chatContainer {
 div.messageContainer {
     width: calc(100% - 10px);
     height: calc(100% - 90px);
+    max-width: calc(100% - 10px);
+    max-height: calc(100% - 90px);
     /*background-color: red;*/
+    overflow: auto;
 }
 
 div.inputContainer {

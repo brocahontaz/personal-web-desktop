@@ -378,25 +378,28 @@ export default class MenuIcon extends window.HTMLElement {
   showAll (e) {
     /* this.shadowRoot.getElementById('showAll').style.display = 'none' */
     const list = this.shadowRoot.querySelector('.collapsibleList')
-    if (list.style.height) {
-      // list.style.maxHeight = null
-      list.style.height = null
-      // this.shadowRoot.querySelector('.collapsibleList').style.visibility = 'hidden'
-      this.shadowRoot.querySelector('.collapsibleList').style.display = 'none'
-      this.shadowRoot.querySelector('.shrinkIcon').style.display = 'none'
-      this.shadowRoot.querySelector('.expandIcon').style.display = 'block'
-      // this.shadowRoot.querySelector('.collapsibleList').classList.remove('.moveup')
-      // this.shadowRoot.querySelector('.collapsibleList').classList.add('.movedown')
-    } else {
-      // list.style.maxHeight = '500px'
-      list.style.height = 'auto'
-      // this.shadowRoot.querySelector('.collapsibleList').style.visibility = 'visible'
-      this.shadowRoot.querySelector('.collapsibleList').style.display = 'block'
-      this.shadowRoot.querySelector('.shrinkIcon').style.display = 'block'
-      this.shadowRoot.querySelector('.expandIcon').style.display = 'none'
-      // this.shadowRoot.querySelector('.collapsibleList').classList.remove('.movedown')
-      // this.shadowRoot.querySelector('.collapsibleList').classList.add('.moveup')
+    if (this.shadowRoot.querySelector('.contextList').hasChildNodes()) {
+      if (list.style.height) {
+        // list.style.maxHeight = null
+        list.style.height = null
+        // this.shadowRoot.querySelector('.collapsibleList').style.visibility = 'hidden'
+        this.shadowRoot.querySelector('.collapsibleList').style.display = 'none'
+        this.shadowRoot.querySelector('.shrinkIcon').style.display = 'none'
+        this.shadowRoot.querySelector('.expandIcon').style.display = 'block'
+        // this.shadowRoot.querySelector('.collapsibleList').classList.remove('.moveup')
+        // this.shadowRoot.querySelector('.collapsibleList').classList.add('.movedown')
+      } else {
+        // list.style.maxHeight = '500px'
+        list.style.height = 'auto'
+        // this.shadowRoot.querySelector('.collapsibleList').style.visibility = 'visible'
+        this.shadowRoot.querySelector('.collapsibleList').style.display = 'block'
+        this.shadowRoot.querySelector('.shrinkIcon').style.display = 'block'
+        this.shadowRoot.querySelector('.expandIcon').style.display = 'none'
+        // this.shadowRoot.querySelector('.collapsibleList').classList.remove('.movedown')
+        // this.shadowRoot.querySelector('.collapsibleList').classList.add('.moveup')
+      }
     }
+
     // this.shadowRoot.querySelector('.contextList').style.display = 'block'
   }
 

@@ -1,31 +1,45 @@
 const template = document.createElement('template')
 template.innerHTML = `
 <style>
-div {
-  width: 90%;
-  height: 90%;
+div.brickContainer {
+  width: auto;
+  height: auto;
+  max-width: 90%;
+  max-height: 90%;
   padding: 0;
   margin: 0;
-  background: red;
-  display: flex;
-  justify-content: center;
+  user-select: none;
+  object-fit: contain;
+  /*background: red;
+  /*display: grid;
+  grid-template-rows: 100%;
+  grid-template-columns: 100%;
+  /*justify-content: center;*/
 }
 img {
-  width: 100%;
-  height: 100%;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
   padding: 0;
   margin: 0;
+  object-fit: contain;
+  /*transition: visibility 0.5s;
+  grid-column: 1 / 1 / 1 / 1;
+  grid-row: 1 / 1 / 1 / 1;*/
 }
 img.backside {
   display: block;
+  /*visibility: visible;*/
 }
 img.frontside {
   display: none;
+  /*visibility: hidden;*/
 }
 </style>
-<div>
-<img src="/image/" class="backside">
-<img src ="/image" class="frontside">
+<div class="brickContainer">
+  <img src="/image/" class="backside">
+  <img src ="/image" class="frontside">
 </div>
 `
 
@@ -50,11 +64,11 @@ export default class MemoryBrick extends window.HTMLElement {
     this.shadowRoot.querySelector('.backside').setAttribute('src', '/image/' + this._backside)
     this.shadowRoot.querySelector('.frontside').setAttribute('src', '/image/' + this._img)
 
-    this.addEventListener('click', (e) => this.toggleView(e))
+    this.shadowRoot.addEventListener('click', (e) => this.clickBrick(e))
   }
 
   disconnectedCallback () {
-    this.removeEventListener('click', (e) => this.toggleView(e))
+    this.shadowRoot.removeEventListener('click', (e) => this.clickBrick(e))
   }
 
   attributeChangedCallback (name, oldValue, newValue) {
@@ -71,24 +85,37 @@ export default class MemoryBrick extends window.HTMLElement {
     return this._img
   }
 
+  clickBrick (e) {
+    this._clickBrick = new window.CustomEvent('clickBrick', {
+      bubbles: true,
+      cancelable: true,
+      detail: { id: this.id, img: this._img, revealed: this._revealed }
+    })
+    this.dispatchEvent(this._clickBrick)
+  }
+
   toggleView (e) {
     if (this._reveal && !this._matched) {
       this._reveal = false
       this.shadowRoot.querySelector('.backside').style.display = 'block'
       this.shadowRoot.querySelector('.frontside').style.display = 'none'
+      /* this.shadowRoot.querySelector('.backside').style.visibility = 'visible'
+      this.shadowRoot.querySelector('.frontside').style.visibility = 'hidden' */
     } else if (!this._matched) {
       this._reveal = true
       this.shadowRoot.querySelector('.backside').style.display = 'none'
       this.shadowRoot.querySelector('.frontside').style.display = 'block'
+      /* this.shadowRoot.querySelector('.backside').style.visibility = 'hidden'
+      this.shadowRoot.querySelector('.frontside').style.visibility = 'visible' */
     }
-
+    /*
     this._clickBrick = new window.CustomEvent('clickBrick', {
       bubbles: true,
       cancelable: true,
       detail: { id: this.id, img: this._img, revealed: this._revealed }
     })
 
-    this.dispatchEvent(this._clickBrick)
+    this.dispatchEvent(this._clickBrick) */
   }
 
   match () {
