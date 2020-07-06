@@ -91,6 +91,24 @@ div.memoryContainer .memoryGame .memoryGrid {
     /*background: blue;*/
 }
 
+div.memoryContainer .result {
+    display: none;
+    flex-direction: column;
+    /*background: blue;*/
+}
+
+div.memoryContainer .result .enterName {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 70% 30%;
+    /*background: blue;*/
+}
+
+div.memoryContainer .result .enterName input {
+    width: 100%;
+    /*background: blue;*/
+}
+
 div.memoryContainer .memoryGrid img {
   width: 90%;
   height: 90%;
@@ -131,10 +149,36 @@ button.play:hover {
 button.play:active {
   background-color: #B9B8C5;
 }
+
+h2 {
+  font-size: 2.0rem;
+  line-height: 2.1rem;
+  padding: 0;
+  margin: 0;
+}
+
+ol {
+  padding: 0;
+  margin: 0;
+}
 </style>
 <div class="memoryContainer">
     <div class="memoryMenu">
       <div class="highScore">
+          <div class="result">
+            <h2>Good job!</h2>
+            <div>
+              <span class="end">Your score was</span>
+              <span class="endScore"></span>
+              with a total time of
+              <span class="totalTime"></span> seconds and 
+              <span class="totalClicks"></span> clicks.
+            </div>
+            <div class="enterName">
+              <input type="text" id="name" placeholder="Please enter name for high score list..">
+              <button class="saveScore">Save</button>
+            </div>
+          </div>
         <h2>High Score</h2>
         <ol>
         </ol>
@@ -188,9 +232,11 @@ export default class MemoryApplication extends window.HTMLElement {
     this._startTime = null
     this._endTime = null
     this._testInterval = null
-    this._elapsed = 0
+    this._elapsed = 1
     this._finished = false
     this._matches = 0
+    this._scoreMultiplier = 0
+    this._currentScore = 0
   }
 
   connectedCallback () {
@@ -199,18 +245,25 @@ export default class MemoryApplication extends window.HTMLElement {
     // this.displayMemoryGridNew()
     console.log(this._imageArray)
 
+    this.populateScores()
+
     this.shadowRoot.addEventListener('clickBrick', (e) => this.clickBrick(e))
 
     this.shadowRoot.querySelector('.play').addEventListener('click', (e) => this.startGame(e))
+
+    this.shadowRoot.querySelector('.saveScore').addEventListener('click', (e) => this.saveScore(e))
   }
 
   disconnectedCallback () {
     this.shadowRoot.removeEventListener('clickBrick', (e) => this.clickBrick(e))
 
     this.shadowRoot.querySelector('.play').removeEventListener('click', (e) => this.startGame(e))
+
+    this.shadowRoot.querySelector('.saveScore').removeEventListener('click', (e) => this.saveScore(e))
   }
 
   startGame (e) {
+    this.resetGame()
     this._testInterval = setInterval(this.testTimer.bind(this), 1000)
     this._startTime = Date.now()
     const gridSizeChoice = this.shadowRoot.querySelector('input[name=gridSize]:checked').value
@@ -221,16 +274,22 @@ export default class MemoryApplication extends window.HTMLElement {
         this.populateArray(9)
         columns = 4
         rows = 4
+        this._matches = 4 * 4
+        this._scoreMultiplier = 100
         break
       case '2by2':
         this.populateArray(3)
         columns = 2
         rows = 2
+        this._matches = 2 * 2
+        this._scoreMultiplier = 10
         break
       case '2by4':
         this.populateArray(5)
         columns = 2
         rows = 4
+        this._matches = 2 * 4
+        this._scoreMultiplier = 20
         break
     }
 
@@ -260,7 +319,8 @@ export default class MemoryApplication extends window.HTMLElement {
   }
 
   populateArray (images) {
-    this._imageArray = [...Array(images).keys(), ...Array(images).keys()].map(nbr => `${nbr}.png`)
+    this._imageArray = [...Array(images).keys(), ...Array(images).keys()].filter(img => img !== 0).map(nbr => `${nbr}.png`)
+    console.log('arr', this._imageArray)
   }
 
   shuffleImages () {
@@ -286,13 +346,11 @@ export default class MemoryApplication extends window.HTMLElement {
   displayMemoryGridNew () {
     let itr = 0
     this._imageArray.forEach(element => {
-      if (element !== '0.png') {
-        const brick = document.createElement('memory-brick')
-        brick.setAttribute('img', element)
-        brick.id = itr++
-        console.log(brick)
-        this.shadowRoot.querySelector('.memoryGrid').appendChild(brick)
-      }
+      const brick = document.createElement('memory-brick')
+      brick.setAttribute('img', element)
+      brick.id = itr++
+      console.log(brick)
+      this.shadowRoot.querySelector('.memoryGrid').appendChild(brick)
     })
 
     // console.log(this._startTime)
@@ -326,12 +384,25 @@ export default class MemoryApplication extends window.HTMLElement {
     if (arr[0] === arr[1]) {
       console.log(arr[0])
       console.log('WIN')
+      console.log('hallå')
+      this._imageArray = this._imageArray.filter(img => img !== arr[0])
       this.clearGrid(true)
+      console.log('img arrrrrr', this._imageArray)
+      if (this._imageArray.length === 0) {
+        console.log('BIG WIN')
+        this.gameOver()
+      }
+      /* this._matches--
+      if (this._matches <= 0) {
+        console.log('BIG WIN')
+      } */
+      return true
     } else {
       console.log('uhoh')
       console.log('double WTF', this._revealed)
       // setTimeout(this.clearGrid, 2000)
       this.clearGrid(false)
+      return false
     }
   }
 
@@ -345,12 +416,77 @@ export default class MemoryApplication extends window.HTMLElement {
     // console.log(Date.now())
   }
 
+  gameOver () {
+    clearInterval(this._testInterval)
+    this.shadowRoot.querySelector('.memoryGame').style.display = 'none'
+    this.shadowRoot.querySelector('.timerAndClicks').style.display = 'none'
+    this.shadowRoot.querySelector('.memoryMenu').style.display = 'grid'
+    this.shadowRoot.querySelector('.result').style.display = 'flex'
+
+    this._endTime = Date.now()
+    const playTime = this._endTime - this._startTime
+    console.log('sec', playTime / 1000)
+    const score = Math.floor(this.calculateScore(playTime, this._nbrOfClicks))
+    console.log('score:', score)
+    this.shadowRoot.querySelector('.endScore').innerText = score
+    this.shadowRoot.querySelector('.totalTime').innerText = playTime / 1000
+    this.shadowRoot.querySelector('.totalClicks').innerText = this._nbrOfClicks
+
+    console.log(this)
+  }
+
+  resetGame () {
+    this._currentScore = 0
+    this._nbrOfClicks = 0
+    this.shadowRoot.querySelector('.memoryGrid').innerHTML = ''
+    this.shadowRoot.getElementById('timer').innerText = 1
+    this.shadowRoot.getElementById('clicks').innerText = 0
+  }
+
+  calculateScore (playTime, clicks) {
+    console.log(playTime)
+    const score = (100 - clicks) / (playTime / 1000) * this._scoreMultiplier
+    this._currentScore = score
+    return score
+  }
+
+  saveScore (e) {
+    this.shadowRoot.querySelector('.result').style.display = 'none'
+    const name = this.shadowRoot.getElementById('name').value
+    const scores = JSON.parse(window.localStorage.getItem('highScore') || '[]')
+    console.log(scores)
+    const scoreItem = { userName: name, score: this._currentScore }
+    scores.push(scoreItem)
+    window.localStorage.setItem('highScore', JSON.stringify(scores))
+    console.log(name)
+    this.getHighScores()
+    this.populateScores()
+  }
+
+  getHighScores () {
+    const scores = JSON.parse(window.localStorage.getItem('highScore') || '[]')
+    const updatedScores = scores.sort((a, b) => b.score - a.score).slice(0, 10)
+    window.localStorage.setItem('highScore', JSON.stringify(updatedScores))
+    console.log(updatedScores)
+  }
+
+  populateScores () {
+    const list = this.shadowRoot.querySelector('.highScore ol')
+    list.innerHTML = ''
+    const scores = JSON.parse(window.localStorage.getItem('highScore') || '[]')
+    scores.forEach(scoreItem => {
+      const item = document.createElement('li')
+      item.innerText = scoreItem.userName + ' - ' + Math.floor(scoreItem.score) + ' points'
+      list.appendChild(item)
+    })
+  }
+
   async clearGrid (match) {
     const arr = Array.from(this._revealed.keys())
     if (match) {
       await this.sleep(500)
       arr.forEach(el => {
-        console.log(el)
+        console.log('BRICK', el)
         this.shadowRoot.getElementById(el).match()
         this._revealed.clear()
       })
