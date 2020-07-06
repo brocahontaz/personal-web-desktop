@@ -4,12 +4,18 @@ template.innerHTML = `
 div.brickContainer {
   width: auto;
   height: auto;
-  max-width: 90%;
-  max-height: 90%;
+  max-width: 100%;
+  max-height: 100%;
   padding: 0;
   margin: 0;
   user-select: none;
   object-fit: contain;
+  display: flex;
+  align-items: center;
+  align-content: center;
+  justify-content: center;
+  justify-items: center;
+  /*background: green;
   /*background: red;
   /*display: grid;
   grid-template-rows: 100%;
@@ -19,8 +25,8 @@ div.brickContainer {
 img {
   width: auto;
   height: auto;
-  max-width: 100%;
-  max-height: 100%;
+  max-width: 80%;
+  max-height: 80%;
   padding: 0;
   margin: 0;
   object-fit: contain;

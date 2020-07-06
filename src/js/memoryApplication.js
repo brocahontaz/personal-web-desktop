@@ -12,8 +12,19 @@ div.memoryContainer {
     height: 100%;
     background: #ffffff;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
+}
+
+div.memoryContainer .memoryGame {
+  width: 100%;
+  height: 100%;
+  display: none;
+  grid-template-rows: 10% 90%;
+  justify-items: center;
+  align-items: center;
+  /*background: red;*/
 }
 
 div.memoryContainer .memoryMenu {
@@ -26,7 +37,9 @@ div.memoryContainer .memoryMenu {
 div.memoryContainer .memoryMenu .highScore {
   width: 100%;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
 }
 div.memoryContainer .memoryMenu .highScore h2 {
   font-size: 1.2rem;
@@ -48,7 +61,7 @@ div.memoryContainer .memoryMenu .actionMenu legend {
   font-weight: 800;
 }
 
-div.memoryContainer .memoryMenu .actionMenu .choices{
+div.memoryContainer .memoryMenu .actionMenu .choices {
   height: 100%;
   width: 100%;
   display: flex;
@@ -56,16 +69,26 @@ div.memoryContainer .memoryMenu .actionMenu .choices{
   justify-content: space-evenly;
 }
 
-div.memoryContainer .memoryGrid {
-    width: calc(100% - 20px);
-    height: calc(100% - 20px);
+div.memoryContainer .timerAndClicks {
+  display: none;
+  flex-direction: row;
+  justify-content: space-evenly;
+  align-items: flex-end;
+  width: 100%;
+  height: 100%;
+}
+
+div.memoryContainer .memoryGame .memoryGrid {
+    width: calc(90% - 20px);
+    height: calc(90% - 20px);
     max-width: 800px;
     max-height: 800px;
     display: none;
-    grid-template-columns: 25% 25% 25% 25%;
-    grid-template-rows: 25% 25% 25% 25%;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr 1fr;
     justify-items: center;
     align-items: center;
+    /*background: blue;*/
 }
 
 div.memoryContainer .memoryGrid img {
@@ -116,12 +139,10 @@ button.play:active {
         <ol>
         </ol>
       </div>
-      <div class="actionMenu">
-        
+      <div class="actionMenu">       
         <fieldset>
           <legend>Pick grid size</legend>
-        <div class="choices">
-          
+        <div class="choices">       
           <span>
             <input type="radio" id="4by4" name="gridSize" value="4by4" checked="checked">
             <label for="4by4">4 x 4</label>
@@ -133,14 +154,25 @@ button.play:active {
           <span>
             <input type="radio" id="2by4" name="gridSize" value="2by4">
             <label for="2by4">2 x 4</label>
-          </span>
-        
+          </span>    
         </div>
         </fieldset>
         <button class="play">Play!</button>
       </div>
     </div>
-    <div class="memoryGrid">
+    <div class="memoryGame">
+      <div class="timerAndClicks">
+        <div class="timer">
+          Timer: 
+          <span id="timer">0</span>
+        </div>
+        <div class="clicks">
+          Clicks:
+          <span id="clicks">0</span>
+        </div>
+      </div>
+      <div class="memoryGrid">
+      </div>
     </div>
 <div>
 `
@@ -152,6 +184,13 @@ export default class MemoryApplication extends window.HTMLElement {
     this.shadowRoot.appendChild(template.content.cloneNode(true))
     this._imageArray = []
     this._revealed = new Map()
+    this._nbrOfClicks = 0
+    this._startTime = null
+    this._endTime = null
+    this._testInterval = null
+    this._elapsed = 0
+    this._finished = false
+    this._matches = 0
   }
 
   connectedCallback () {
@@ -172,6 +211,8 @@ export default class MemoryApplication extends window.HTMLElement {
   }
 
   startGame (e) {
+    this._testInterval = setInterval(this.testTimer.bind(this), 1000)
+    this._startTime = Date.now()
     const gridSizeChoice = this.shadowRoot.querySelector('input[name=gridSize]:checked').value
     let columns = 0
     let rows = 0
@@ -198,8 +239,11 @@ export default class MemoryApplication extends window.HTMLElement {
     this.shadowRoot.querySelector('.memoryMenu').style.display = 'none'
 
     this.setGrid(columns, rows)
+    this.shadowRoot.querySelector('.memoryGame').style.display = 'grid'
     this.shadowRoot.querySelector('.memoryGrid').style.display = 'grid'
     // console.log(gridSize)
+
+    this.shadowRoot.querySelector('.timerAndClicks').style.display = 'flex'
   }
 
   setGrid (columns, rows) {
@@ -250,6 +294,8 @@ export default class MemoryApplication extends window.HTMLElement {
         this.shadowRoot.querySelector('.memoryGrid').appendChild(brick)
       }
     })
+
+    // console.log(this._startTime)
   }
 
   clickBrick (e) {
@@ -257,6 +303,8 @@ export default class MemoryApplication extends window.HTMLElement {
     e.cancelBubble = true
     if (this._revealed.size < 2 && !this._revealed.get(e.detail.id)) {
       if (!this._revealed.delete(e.detail.id)) {
+        this.incrementClicks()
+        // console.log(this._nbrOfClicks)
         this.shadowRoot.getElementById(e.detail.id).toggleView(e)
         this._revealed.set(e.detail.id, e.detail.img)
         if (this._revealed.size === 2) {
@@ -285,6 +333,16 @@ export default class MemoryApplication extends window.HTMLElement {
       // setTimeout(this.clearGrid, 2000)
       this.clearGrid(false)
     }
+  }
+
+  incrementClicks () {
+    this._nbrOfClicks++
+    this.shadowRoot.getElementById('clicks').innerText = this._nbrOfClicks
+  }
+
+  testTimer () {
+    this.shadowRoot.getElementById('timer').innerText = this._elapsed++
+    // console.log(Date.now())
   }
 
   async clearGrid (match) {
