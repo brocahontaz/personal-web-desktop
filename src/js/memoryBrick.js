@@ -1,15 +1,23 @@
 const template = document.createElement('template')
 template.innerHTML = `
 <style>
+:host {
+  all: initial;
+  display: block;
+  content: contain;
+  height: 100%;
+  width: 100%;
+}
+div {
+  /*max-width: 100%;
+  max-height: 100%;*/
+}
 div.brickContainer {
-  width: auto;
-  height: auto;
-  max-width: 100%;
-  max-height: 100%;
+  height: 100%;
+  width: 100%;
   padding: 0;
   margin: 0;
   user-select: none;
-  object-fit: contain;
   display: flex;
   align-items: center;
   align-content: center;
@@ -23,19 +31,17 @@ div.brickContainer {
   /*justify-content: center;*/
 }
 img {
-  width: auto;
-  height: auto;
-  max-width: 80%;
-  max-height: 80%;
+  height: 100%;
+  width: 100%;
+  object-fit: contain;
   padding: 0;
   margin: 0;
-  object-fit: contain;
   /*transition: visibility 0.5s;
   grid-column: 1 / 1 / 1 / 1;
   grid-row: 1 / 1 / 1 / 1;*/
 }
 img.backside {
-  display: block;
+  display: block; /* block */
   /*visibility: visible;*/
 }
 img.frontside {
