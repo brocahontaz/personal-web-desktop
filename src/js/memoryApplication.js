@@ -32,6 +32,7 @@ div.memoryContainer .memoryMenu {
   height: calc(100% - 20px);
   display: grid;
   grid-template-rows: 70% 30%;
+  user-select: none;
 }
 
 div.memoryContainer .memoryMenu .highScore {
@@ -237,6 +238,9 @@ export default class MemoryApplication extends window.HTMLElement {
     this._matches = 0
     this._scoreMultiplier = 0
     this._currentScore = 0
+    this._rows = 0
+    this._columns = 0
+    this._over = false
   }
 
   connectedCallback () {
@@ -245,6 +249,8 @@ export default class MemoryApplication extends window.HTMLElement {
     // this.displayMemoryGridNew()
     console.log(this._imageArray)
 
+    // this.tabIndex = -1
+
     this.populateScores()
 
     this.shadowRoot.addEventListener('clickBrick', (e) => this.clickBrick(e))
@@ -252,6 +258,10 @@ export default class MemoryApplication extends window.HTMLElement {
     this.shadowRoot.querySelector('.play').addEventListener('click', (e) => this.startGame(e))
 
     this.shadowRoot.querySelector('.saveScore').addEventListener('click', (e) => this.saveScore(e))
+
+    this.shadowRoot.getElementById('name').addEventListener('click', (e) => { this.shadowRoot.getElementById('name').focus() })
+
+    this.shadowRoot.querySelector('.memoryGrid').addEventListener('keypress', (e) => this.move(e))
   }
 
   disconnectedCallback () {
@@ -260,6 +270,62 @@ export default class MemoryApplication extends window.HTMLElement {
     this.shadowRoot.querySelector('.play').removeEventListener('click', (e) => this.startGame(e))
 
     this.shadowRoot.querySelector('.saveScore').removeEventListener('click', (e) => this.saveScore(e))
+
+    this.shadowRoot.getElementById('name').removeEventListener('click', (e) => { this.shadowRoot.getElementById('name').focus() })
+
+    this.shadowRoot.querySelector('.memoryGrid').removeEventListener('keypress', (e) => this.move(e))
+  }
+
+  move (e) {
+    e.preventDefault()
+    e.stopPropagation()
+    const currentTarget = this.shadowRoot.activeElement
+    const currentId = parseInt(currentTarget.id)
+    let up = -this._columns
+    let down = this._columns
+    let left = -1
+    let right = 1
+
+    // console.log(this._columns)
+    // console.log(this._rows * (this._columns - 1))
+
+    if (currentId < this._columns) {
+      up = (this._rows - 1) * (this._columns)
+    }
+
+    if (currentId >= (this._rows - 1) * (this._columns)) {
+      down = -(this._rows - 1) * (this._columns)
+    }
+
+    if (currentId === 0) {
+      left = this._columns * this._rows - 1
+    }
+
+    if (currentId === this._columns * this._rows - 1) {
+      right = -currentId
+    }
+
+    console.log(currentTarget)
+    // console.log(e)
+    switch (e.code) {
+      case 'KeyW':
+        console.log('UP')
+        console.log(currentId + up)
+        this.shadowRoot.getElementById(currentId + up).focus()
+        break
+      case 'KeyS':
+        console.log('DOWN', parseInt(currentTarget.id) + down)
+        this.shadowRoot.getElementById(currentId + down).focus()
+        break
+      case 'KeyA':
+        console.log('LEFT')
+        this.shadowRoot.getElementById(currentId + left).focus()
+        break
+      case 'KeyD':
+        console.log('RIGHT')
+        this.shadowRoot.getElementById(currentId + right).focus()
+        break
+    }
   }
 
   startGame (e) {
@@ -267,27 +333,27 @@ export default class MemoryApplication extends window.HTMLElement {
     this._testInterval = setInterval(this.testTimer.bind(this), 1000)
     this._startTime = Date.now()
     const gridSizeChoice = this.shadowRoot.querySelector('input[name=gridSize]:checked').value
-    let columns = 0
-    let rows = 0
+    // let columns = 0
+    // let rows = 0
     switch (gridSizeChoice) {
       case '4by4':
         this.populateArray(9)
-        columns = 4
-        rows = 4
+        this._columns = 4
+        this._rows = 4
         this._matches = 4 * 4
         this._scoreMultiplier = 100
         break
       case '2by2':
         this.populateArray(3)
-        columns = 2
-        rows = 2
+        this._columns = 2
+        this._rows = 2
         this._matches = 2 * 2
         this._scoreMultiplier = 10
         break
       case '2by4':
         this.populateArray(5)
-        columns = 2
-        rows = 4
+        this._columns = 2
+        this._rows = 4
         this._matches = 2 * 4
         this._scoreMultiplier = 20
         break
@@ -297,12 +363,15 @@ export default class MemoryApplication extends window.HTMLElement {
     this.displayMemoryGridNew()
     this.shadowRoot.querySelector('.memoryMenu').style.display = 'none'
 
-    this.setGrid(columns, rows)
+    this.setGrid(this._columns, this._rows)
     this.shadowRoot.querySelector('.memoryGame').style.display = 'grid'
     this.shadowRoot.querySelector('.memoryGrid').style.display = 'grid'
     // console.log(gridSize)
 
     this.shadowRoot.querySelector('.timerAndClicks').style.display = 'flex'
+
+    // this.shadowRoot.querySelector('.memoryGrid').firstElementChild.setAttribute('focused', true)
+    this.shadowRoot.querySelector('.memoryGrid').firstElementChild.focus()
   }
 
   setGrid (columns, rows) {
@@ -361,7 +430,10 @@ export default class MemoryApplication extends window.HTMLElement {
     e.cancelBubble = true
     if (this._revealed.size < 2 && !this._revealed.get(e.detail.id)) {
       if (!this._revealed.delete(e.detail.id)) {
-        this.incrementClicks()
+        if (!e.detail.matched) {
+          this.incrementClicks()
+        }
+
         // console.log(this._nbrOfClicks)
         this.shadowRoot.getElementById(e.detail.id).toggleView(e)
         this._revealed.set(e.detail.id, e.detail.img)
@@ -432,10 +504,12 @@ export default class MemoryApplication extends window.HTMLElement {
     this.shadowRoot.querySelector('.totalTime').innerText = playTime / 1000
     this.shadowRoot.querySelector('.totalClicks').innerText = this._nbrOfClicks
 
+    this._over = true
     console.log(this)
   }
 
   resetGame () {
+    this._over = false
     this._currentScore = 0
     this._nbrOfClicks = 0
     this.shadowRoot.querySelector('.memoryGrid').innerHTML = ''
@@ -489,6 +563,8 @@ export default class MemoryApplication extends window.HTMLElement {
         console.log('BRICK', el)
         this.shadowRoot.getElementById(el).match()
         this._revealed.clear()
+        console.log(el)
+        // this.focusNext(parseInt(el) + 1)
       })
     } else {
       console.log('wtf', this._revealed)
@@ -503,6 +579,22 @@ export default class MemoryApplication extends window.HTMLElement {
 
   sleep (ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
+  }
+
+  focusNext (id) {
+    if (id === this._columns * this._rows) {
+      id = 0
+    }
+    console.log(this.shadowRoot.getElementById(id).matched)
+    console.log(id)
+    if (!this.shadowRoot.getElementById(id).matched) {
+      console.log(this.shadowRoot.getElementById(id).matched)
+      this.shadowRoot.getElementById(id).focus()
+    } else if (!this._over) {
+      console.log(this.shadowRoot.getElementById(id).matched)
+      console.log('wtf')
+      this.focusNext(id)
+    }
   }
 }
 

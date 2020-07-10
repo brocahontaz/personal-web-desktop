@@ -263,6 +263,7 @@ export default class ChatApplication extends window.HTMLElement {
   }
 
   enterMessage (e) {
+    console.log(e)
     if (!e.shiftKey && (e.key === 'Enter' || e.button === 0) && this.shadowRoot.getElementById('msgInput').value.trim() !== '') {
       const msgText = this.shadowRoot.getElementById('msgInput').value.trim()
       console.log(msgText)

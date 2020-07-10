@@ -1,5 +1,7 @@
 const template = document.createElement('template')
 template.innerHTML = `
+<head>
+<link rel="stylesheet" href="../css/font-awesome-4.7.0/css/font-awesome.css">
 <style>
 :host {
   all: initial;
@@ -13,6 +15,7 @@ div {
   max-height: 100%;*/
 }
 div.brickContainer {
+  position: relative;
   height: 100%;
   width: 100%;
   padding: 0;
@@ -29,6 +32,11 @@ div.brickContainer {
   grid-template-rows: 100%;
   grid-template-columns: 100%;
   /*justify-content: center;*/
+}
+
+.focus {
+  /*border: 1px solid #ababab;
+  background: rgba(0,0,0,0.3)*/
 }
 img {
   height: 100%;
@@ -48,8 +56,19 @@ img.frontside {
   display: none;
   /*visibility: hidden;*/
 }
+
+.pointer {
+  display: none;
+  position: absolute;
+  top: 5%;
+  font-size: 2.0rem;
+  color: #FF8F4F;
+  opacity: 0.9;
+}
 </style>
-<div class="brickContainer">
+</head>
+<div class="brickContainer" id="space">
+  <div class="pointer"><i class="fa fa-map-marker" aria-hidden="true"></i></div>
   <img src="/image/" class="backside">
   <img src ="/image" class="frontside">
 </div>
@@ -69,22 +88,33 @@ export default class MemoryBrick extends window.HTMLElement {
       cancelable: true,
       detail: { id: this.id, img: this._img, revealed: this._revealed }
     })
+    this._focused = false
   }
 
   connectedCallback () {
+    this.tabIndex = 1
+    // this.setAttribute('tabindex', 1)
     this._img = this.getAttribute('img')
     this.shadowRoot.querySelector('.backside').setAttribute('src', '/image/' + this._backside)
     this.shadowRoot.querySelector('.frontside').setAttribute('src', '/image/' + this._img)
 
     this.shadowRoot.addEventListener('click', (e) => this.clickBrick(e))
+    this.addEventListener('keypress', (e) => this.clickBrick(e))
+    this.addEventListener('focus', (e) => this.focusBrick(e))
+    this.addEventListener('blur', (e) => this.unFocusBrick(e))
   }
 
   disconnectedCallback () {
     this.shadowRoot.removeEventListener('click', (e) => this.clickBrick(e))
+    this.shadowRoot.removeEventListener('keypress', (e) => this.clickBrick(e))
+    this.removeEventListener('focus', (e) => this.focusBrick(e))
+    this.removeEventListener('blur', (e) => this.unFocusBrick(e))
   }
 
   attributeChangedCallback (name, oldValue, newValue) {
-    this.updateBrick()
+    if (name === 'img') {
+      this.updateBrick()
+    }
   }
 
   static get observedAttributes () { return ['img'] }
@@ -93,17 +123,48 @@ export default class MemoryBrick extends window.HTMLElement {
     this._img = this.getAttribute('img')
   }
 
+  focusBrick (e) {
+    this.shadowRoot.querySelector('.pointer').style.display = 'block'
+  }
+
+  unFocusBrick (e) {
+    this.shadowRoot.querySelector('.pointer').style.display = 'none'
+  }
+
   get img () {
     return this._img
   }
 
+  get focused () {
+    return this._focused
+  }
+
+  set focused (focus) {
+    this._focused = focus
+  }
+
+  get matched () {
+    return this._matched
+  }
+
+  testSpace (e) {
+    console.log(e)
+  }
+
   clickBrick (e) {
-    this._clickBrick = new window.CustomEvent('clickBrick', {
-      bubbles: true,
-      cancelable: true,
-      detail: { id: this.id, img: this._img, revealed: this._revealed }
-    })
-    this.dispatchEvent(this._clickBrick)
+    // this.blur()
+    // e.preventDefault()
+    // e.stopPropagation()
+    if (e.keyCode === 32 || e.button === 0) {
+      this._clickBrick = new window.CustomEvent('clickBrick', {
+        bubbles: true,
+        cancelable: true,
+        detail: { id: this.id, img: this._img, revealed: this._revealed, matched: this._matched }
+      })
+      this.dispatchEvent(this._clickBrick)
+    } else {
+
+    }
   }
 
   toggleView (e) {
@@ -131,6 +192,8 @@ export default class MemoryBrick extends window.HTMLElement {
   }
 
   match () {
+    // this.tabIndex = -1
+    // this.removeAttribute('tabindex')
     this._matched = true
     this.shadowRoot.querySelector('.backside').style.display = 'none'
     this.shadowRoot.querySelector('.frontside').style.display = 'none'
