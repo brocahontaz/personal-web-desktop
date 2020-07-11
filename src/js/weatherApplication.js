@@ -76,6 +76,14 @@ div.additionalWeatherItem span:nth-child(2n) {
   justify-self: end;
 }
 
+div.weatherMenu {
+  width: 100%;
+  height: 50px;
+  background: #E7F0F7;
+  display: flex;
+  justify-content: center;
+}
+
 span.temperature {
   font-size: 1.5rem;
   font-weight: 800;
@@ -83,6 +91,44 @@ span.temperature {
 
 span.description {
   font-weight: 800;
+}
+
+button {
+  height: 50px;
+  /*width: 24px;*/
+  background: #E7F0F7;
+  box-shadow: 0px 0px 0px transparent;
+  border: 0px solid transparent;
+  text-shadow: 0px 0px 0px transparent;
+  padding: 10px;
+  margin: 0;
+  color: #000;
+  text-align: center;
+  font-size: 1.2rem;
+}
+
+button:focus {
+  /*background-color: rgba(255,255,255, 0);*/
+  box-shadow: 0px 0px 0px transparent;
+  border: 0px solid transparent;
+  outline: 0;
+  text-shadow: 0px 0px 0px transparent;
+  padding: 10px;
+  /*color: #B9B9B9;*/
+  text-align: center;
+}
+
+button:hover {
+  background: #d7e3ed;
+}
+
+button:active {
+  background: #bccddb; 
+  /*color: #E87288;*/
+}
+
+button.active {
+  background: #fff;
 }
 </style>
 <div class="weatherContainer">
@@ -113,6 +159,11 @@ span.description {
         <div id="sunrise" class="additionalWeatherItem"><span>Sunrise</span><span id="currentSunrise"></span></div>
         <div id="sunset" class="additionalWeatherItem"><span>Sunset</span><span id="currentSunset"></span></div>
       </div>
+      <div class="weatherMenu">
+        <button id="currentButton">Current weather</button>
+        <button id ="hourlyButton">Hourly forecast</button>
+        <button id="dailyButton">Daily forecast</button>
+      </div>
     </div>
   </div>
 </div>
@@ -127,18 +178,16 @@ export default class WeatherApplication extends window.HTMLElement {
 
   connectedCallback () {
     this.testConnection()
+    this.shadowRoot.getElementById('currentButton').classList.add('active')
   }
 
   disconnectedCallback () {
 
   }
 
-  async testConnection () {
-    const response = await window.fetch('http://api.openweathermap.org/data/2.5/weather?q=Malmo,se&units=metric&appid=d7b1a89f9f2a034e861e9664548a6a92')
+  async getCurrentWeather (city, countrycode) {
+    const response = await window.fetch('http://api.openweathermap.org/data/2.5/weather?q=' + city + ',' + countrycode + '&units=metric&appid=d7b1a89f9f2a034e861e9664548a6a92')
     const data = await response.json()
-    /* console.log(data)
-    console.log(data.main)
-    console.log(data.weather) */
 
     this.getMainInfo(data)
 
@@ -146,68 +195,84 @@ export default class WeatherApplication extends window.HTMLElement {
 
     this.getWind(data)
 
-    const pressure = document.createElement('span')
-    pressure.innerHTML = data.main.pressure + ' hpa'
-    this.shadowRoot.getElementById('pressure').appendChild(pressure)
+    this.getCloudiness(data)
 
-    const humidity = document.createElement('span')
-    humidity.innerHTML = data.main.humidity + ' %'
-    this.shadowRoot.getElementById('humidity').appendChild(humidity)
+    this.getPressure(data)
 
-    this.getPrecipitation(data.sys)
-    const sunriseTime = new Date(data.sys.sunrise * 1000)
-    let sunriseHr = sunriseTime.getHours()
-    if (sunriseHr < 10) {
-      sunriseHr = '0' + sunriseHr
-    }
-    let sunriseMin = sunriseTime.getMinutes()
-    if (sunriseMin < 10) {
-      sunriseMin = '0' + sunriseMin
-    }
-    const sunsetTime = new Date(data.sys.sunset * 1000)
-    let sunsetHr = sunsetTime.getHours()
-    if (sunsetHr < 10) {
-      sunsetHr = '0' + sunsetHr
-    }
-    let sunsetMin = sunsetTime.getMinutes()
-    if (sunsetMin < 10) {
-      sunsetMin = '0' + sunsetMin
-    }
-    console.log(sunriseTime, sunsetTime)
+    this.getHumidity(data)
 
-    const sunrise = document.createElement('span')
-    sunrise.innerHTML = sunriseHr + ':' + sunriseMin
-    this.shadowRoot.getElementById('sunrise').appendChild(sunrise)
+    this.getPrecipitation(data)
 
-    const sunset = document.createElement('span')
-    sunset.innerHTML = sunsetHr + ':' + sunsetMin
-    this.shadowRoot.getElementById('sunset').appendChild(sunset)
+    this.getSunrise(data)
+
+    this.getSunset(data)
+  }
+
+  async getHourlyForecast (city, countrycode) {}
+
+  async getDailyForecast (city, countrycode) {}
+
+  async testConnection () {
+    const response = await window.fetch('http://api.openweathermap.org/data/2.5/weather?q=Malmo,se&units=metric&appid=d7b1a89f9f2a034e861e9664548a6a92')
+    const data = await response.json()
+
+    this.getMainInfo(data)
+
+    this.getTemp(data)
+
+    this.getWind(data)
+
+    this.getCloudiness(data)
+
+    this.getPressure(data)
+
+    this.getHumidity(data)
+
+    this.getPrecipitation(data)
+
+    this.getSunrise(data)
+
+    this.getSunset(data)
   }
 
   getMainInfo (data) {
     this.shadowRoot.querySelector('.weatherHeadline').innerText = data.name
+    this.getWeatherIcon(data)
+    this.getWeatherDescription(data)
+  }
 
-    let descString = data.weather[0].description
-    descString = descString.charAt(0).toUpperCase() + descString.slice(1)
-
+  getWeatherIcon (data) {
     const iconUrl = 'http://openweathermap.org/img/wn/' + data.weather[0].icon + '@2x.png'
     this.shadowRoot.querySelector('.weatherIcon').setAttribute('src', iconUrl)
+
+    return iconUrl
+  }
+
+  getWeatherDescription (data) {
+    let descString = data.weather[0].description
+    descString = descString.charAt(0).toUpperCase() + descString.slice(1)
     this.shadowRoot.querySelector('.description').innerHTML = descString
+
+    return descString
   }
 
   getTemp (data) {
     this.shadowRoot.querySelector('.temperature').innerHTML = data.main.temp + ' °C'
     this.shadowRoot.querySelector('.feelsLikeTemp').innerHTML = data.main.feels_like
+
+    const tempData = { temp: data.maintemp + ' °C', feels_like: data.mainfeels_like + ' °C' }
+
+    return tempData
   }
 
   getWind (data) {
     const windSpeed = this.getWindName(data.wind.speed) + ' ' + data.wind.speed + ' m/s ' + this.getWindDirection(data.wind.deg)
     this.shadowRoot.getElementById('currentWind').innerHTML = windSpeed
+
+    return windSpeed
   }
 
   getCloudiness (data) {
-    const cloudinessName = document.createElement('span')
-
     let cloudiness = data.clouds.all
 
     if (cloudiness < 11) {
@@ -222,38 +287,70 @@ export default class WeatherApplication extends window.HTMLElement {
       cloudiness = 'Overcast clouds'
     }
 
-    cloudinessName.innerHTML = cloudiness
-    this.shadowRoot.getElementById('clouds').appendChild(cloudinessName)
+    this.shadowRoot.getElementById('currentClouds').innerHTML = cloudiness
+
+    return cloudiness
   }
 
-  getPressure () {
+  getPressure (data) {
+    const pressure = data.main.pressure + ' hpa'
+    this.shadowRoot.getElementById('currentPressure').innerHTML = pressure
 
+    return pressure
   }
 
-  getHumidity () {
+  getHumidity (data) {
+    const humidity = data.main.humidity + ' %'
+    this.shadowRoot.getElementById('currentHumidity').innerHTML = humidity
 
+    return humidity
   }
 
-  getSunrise () {
-
-  }
-
-  getSunset () {
-
-  }
-
-  getPrecipitation (sys) {
-    const precipitation = document.createElement('span')
+  getPrecipitation (data) {
     let precipitationValue = '0'
-    if (sys.rain) {
-      precipitationValue = sys.rain['1h']
-    } else if (sys.snow) {
-      precipitationValue = sys.snow['1h']
+    if (data.sys.rain) {
+      precipitationValue = data.sys.rain['1h']
+    } else if (data.sys.snow) {
+      precipitationValue = data.sys.snow['1h']
     }
 
     precipitationValue += ' mm/h'
-    precipitation.innerHTML = precipitationValue
-    this.shadowRoot.getElementById('precipitation').appendChild(precipitation)
+    this.shadowRoot.getElementById('currentPrecipitation').innerHTML = precipitationValue
+
+    return precipitationValue
+  }
+
+  getSunrise (data) {
+    const sunriseTime = new Date(data.sys.sunrise * 1000)
+    let sunriseHr = sunriseTime.getHours()
+    if (sunriseHr < 10) {
+      sunriseHr = '0' + sunriseHr
+    }
+    let sunriseMin = sunriseTime.getMinutes()
+    if (sunriseMin < 10) {
+      sunriseMin = '0' + sunriseMin
+    }
+    const sunrise = sunriseHr + ':' + sunriseMin
+    this.shadowRoot.getElementById('currentSunrise').innerHTML = sunrise
+
+    return sunrise
+  }
+
+  getSunset (data) {
+    const sunsetTime = new Date(data.sys.sunset * 1000)
+    let sunsetHr = sunsetTime.getHours()
+    if (sunsetHr < 10) {
+      sunsetHr = '0' + sunsetHr
+    }
+    let sunsetMin = sunsetTime.getMinutes()
+    if (sunsetMin < 10) {
+      sunsetMin = '0' + sunsetMin
+    }
+
+    const sunset = sunsetHr + ':' + sunsetMin
+    this.shadowRoot.getElementById('currentSunset').innerHTML = sunset
+
+    return sunset
   }
 
   getWindName (speed) {
