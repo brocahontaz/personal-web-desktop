@@ -21,16 +21,35 @@ div.weatherHeadline {
   width: 100%;
   height: 100%;
   font-size: 1.8rem;
-  background: #dbdbdb;
+  background: #E7F0F7;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
+div.searchField {
+  height: 100%;
+  background-color: #E7F0F7;
+  display: flex;
+}
+
+div.searchField:hover {
+  background: #d7e3ed;
+}
+
+div.weatherWrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
 div.weatherInfo {
   max-width: 800px;
   width: 100%;
-  height: 100%;
+  /*height: 100%;*/
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -76,7 +95,38 @@ div.additionalWeatherItem span:nth-child(2n) {
   justify-self: end;
 }
 
+div.weatherForecast {
+  width: 100%;
+  max-width: 900px;
+  display: none;
+  overflow: auto;
+}
+
+ul.forecastList {
+  width: 100%;
+  padding: 0;
+}
+
+ul.forecastList li {
+  width: 100%;
+  height: 80px;
+  display: grid;
+  grid-template-columns: 1fr 3fr;
+}
+
+ul.forecastList li div.dayHeader {
+
+}
+
+ul.forecastList li div.dayInfo {
+  
+}
+
+ul.forecastList li:nth-child(2n) {
+  background: #E7F0F7;
+}
 div.weatherMenu {
+  margin-top: auto;
   width: 100%;
   height: 50px;
   background: #E7F0F7;
@@ -130,39 +180,81 @@ button:active {
 button.active {
   background: #fff;
 }
+
+button.search {
+  background: transparent;
+  width: 40px;
+  height: 100%;
+  background-image: url('../image/search2.png');
+  background-size: 20px 20px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+button.search:active {
+  background: #bccddb; 
+}
+
+input[type=text] {
+  background-color: transparent;
+  padding: 0;
+  padding-left: 10px;
+  width: 200px;
+  height: 100%;
+  border: 0;
+  font-size: 1.6rem;
+  text-align: center;
+}
+
+input[type=text]:hover {
+  background: #d7e3ed;
+}
+
+input[type=text]:focus {
+  outline: none;
+  border: 0;
+}
+
+input[type=text]:active {
+  border: 0;
+}
 </style>
 <div class="weatherContainer">
   <div class="weatherDisplay">
     <div class="weatherHeadline">
+      <div class="searchField">
+        <input type="text" placeholder="Search city (SE).." id="search">
+        <button id="searchButton" class="search"></button>
+      </div>
     </div>
-    <div class="weatherInfo">
-      <div class="weatherInfoMain">
-        <img class="weatherIcon">
-        <div class="weatherText">
-          <span class="temperature"></span>
-          <div class="temperatureInfo">Feels like <span class="feelsLikeTemp"></span> °C</div>
+    <div class="weatherWrapper">
+      <div class="weatherInfo">
+        <div class="weatherInfoMain">
+          <img class="weatherIcon">
+          <div class="weatherText">
+            <span class="temperature"></span>
+            <div class="temperatureInfo">Feels like <span class="feelsLikeTemp"></span></div>
+          </div>
+        </div>
+        <span class="description"></span>
+        <div class="additionalWeatherInfo">
+          <div id="wind" class="additionalWeatherItem"><span>Wind</span><span id="currentWind"></span></div>
+          <div id="clouds" class="additionalWeatherItem"><span>Cloudiness</span><span id="currentClouds"></span></div>
+          <div id="pressure" class="additionalWeatherItem"><span>Pressure</span><span id="currentPressure"></span></div>
+          <div id="humidity" class="additionalWeatherItem"><span>Humidity</span><span id="currentHumidity"></span></div>
+          <div id="precipitation" class="additionalWeatherItem"><span>Precipitation</span><span id="currentPrecipitation"></span></div>
+          <div id="sunrise" class="additionalWeatherItem"><span>Sunrise</span><span id="currentSunrise"></span></div>
+          <div id="sunset" class="additionalWeatherItem"><span>Sunset</span><span id="currentSunset"></span></div>
         </div>
       </div>
-      <span class="description"></span>
-      <!--<table id ="additionalWeatherInfo">
-        <tr>
-          <td></td>
-          <td></td>
-        <tr>
-      </table>-->
-      <div class="additionalWeatherInfo">
-        <div id="wind" class="additionalWeatherItem"><span>Wind</span><span id="currentWind"></span></div>
-        <div id="clouds" class="additionalWeatherItem"><span>Cloudiness</span><span id="currentClouds"></span></div>
-        <div id="pressure" class="additionalWeatherItem"><span>Pressure</span><span id="currentPressure"></span></div>
-        <div id="humidity" class="additionalWeatherItem"><span>Humidity</span><span id="currentHumidity"></span></div>
-        <div id="precipitation" class="additionalWeatherItem"><span>Precipitation</span><span id="currentPrecipitation"></span></div>
-        <div id="sunrise" class="additionalWeatherItem"><span>Sunrise</span><span id="currentSunrise"></span></div>
-        <div id="sunset" class="additionalWeatherItem"><span>Sunset</span><span id="currentSunset"></span></div>
+      <div class="weatherForecast">
+        <ul class="forecastList">
+          
+        </ul>
       </div>
       <div class="weatherMenu">
         <button id="currentButton">Current weather</button>
-        <button id ="hourlyButton">Hourly forecast</button>
-        <button id="dailyButton">Daily forecast</button>
+        <button id ="forecastButton">Weather Forecast</button>
       </div>
     </div>
   </div>
@@ -179,33 +271,82 @@ export default class WeatherApplication extends window.HTMLElement {
   connectedCallback () {
     this.testConnection()
     this.shadowRoot.getElementById('currentButton').classList.add('active')
+
+    this.shadowRoot.getElementById('search').addEventListener('keypress', (e) => this.search(e))
+    this.shadowRoot.getElementById('currentButton').addEventListener('click', (e) => this.showCurrentWeather(e))
+    this.shadowRoot.getElementById('forecastButton').addEventListener('click', (e) => this.showForecastWeather(e))
   }
 
   disconnectedCallback () {
-
+    this.shadowRoot.getElementById('search').removeEventListener('keypress', (e) => this.search(e))
+    this.shadowRoot.getElementById('currentButton').removeEventListener('click', (e) => this.showCurrentWeather(e))
+    this.shadowRoot.getElementById('forecastButton').removeEventListener('click', (e) => this.showForecastWeather(e))
   }
 
   async getCurrentWeather (city, countrycode) {
     const response = await window.fetch('http://api.openweathermap.org/data/2.5/weather?q=' + city + ',' + countrycode + '&units=metric&appid=d7b1a89f9f2a034e861e9664548a6a92')
     const data = await response.json()
 
-    this.getMainInfo(data)
+    this.shadowRoot.querySelector('.weatherIcon').setAttribute('src', this.getWeatherIcon(data))
 
-    this.getTemp(data)
+    this.shadowRoot.querySelector('.description').innerHTML = this.getWeatherDescription(data)
 
-    this.getWind(data)
+    const tempValues = this.getTemp(data)
 
-    this.getCloudiness(data)
+    this.shadowRoot.querySelector('.temperature').innerHTML = tempValues.temp
+    this.shadowRoot.querySelector('.feelsLikeTemp').innerHTML = tempValues.feels_like
 
-    this.getPressure(data)
+    this.shadowRoot.getElementById('currentWind').innerHTML = this.getWind(data)
 
-    this.getHumidity(data)
+    this.shadowRoot.getElementById('currentClouds').innerHTML = this.getCloudiness(data)
 
-    this.getPrecipitation(data)
+    this.shadowRoot.getElementById('currentPressure').innerHTML = this.getPressure(data)
 
-    this.getSunrise(data)
+    this.shadowRoot.getElementById('currentHumidity').innerHTML = this.getHumidity(data)
 
-    this.getSunset(data)
+    this.shadowRoot.getElementById('currentPrecipitation').innerHTML = this.getPrecipitation(data)
+
+    this.shadowRoot.getElementById('currentSunrise').innerHTML = this.getSunrise(data)
+
+    this.shadowRoot.getElementById('currentSunset').innerHTML = this.getSunset(data)
+
+    console.log(data.coord.lat, data.coord.lon)
+
+    return { lat: data.coord.lat, lon: data.coord.lon }
+  }
+
+  async getAllWeather (city, contrycode) {
+
+  }
+
+  async getWeatherForecast (lat, lon) {
+    console.log(lat, lon)
+    const response = await window.fetch('https://api.openweathermap.org/data/2.5/onecall?lat=' + lat + '&lon=' + lon + '&exclude={current,minutely,hourly}&units=metric&appid=d7b1a89f9f2a034e861e9664548a6a92')
+    const data = await response.json()
+    // console.log(day)
+    console.log(data.daily)
+
+    data.daily.forEach(day => {
+      const listItem = document.createElement('li')
+      const date = new Date(day.dt * 1000)
+      const dateString = date.getDay() + ' ' + date.getDate() + ' ' + date.getMonth()
+      const clouds = day.clouds
+      const dayTemp = day.temp.day
+      const nightTemp = day.temp.night
+      const dayHeader = document.createElement('div')
+      dayHeader.classList.add('dayHeader')
+      dayHeader.innerText = dateString
+      listItem.appendChild(dayHeader)
+      const dayInfo = document.createElement('div')/* .classList.add('dayInfo') */
+      dayInfo.innerText = clouds + dayTemp + nightTemp
+      listItem.appendChild(dayInfo)
+
+      this.shadowRoot.querySelector('.forecastList').appendChild(listItem)
+    })
+
+    /* const response = await window.fetch('http://api.openweathermap.org/data/2.5/forecast?q=' + city + ',' + countrycode + '&units=metric&appid=d7b1a89f9f2a034e861e9664548a6a92')
+    const data = await response.json()
+    console.log(data) */
   }
 
   async getHourlyForecast (city, countrycode) {}
@@ -213,37 +354,45 @@ export default class WeatherApplication extends window.HTMLElement {
   async getDailyForecast (city, countrycode) {}
 
   async testConnection () {
-    const response = await window.fetch('http://api.openweathermap.org/data/2.5/weather?q=Malmo,se&units=metric&appid=d7b1a89f9f2a034e861e9664548a6a92')
+    const response = await window.fetch('http://api.openweathermap.org/data/2.5/weather?q=Malmö,se&units=metric&appid=d7b1a89f9f2a034e861e9664548a6a92')
     const data = await response.json()
 
-    this.getMainInfo(data)
+    // this.getMainInfo(data)
 
-    this.getTemp(data)
+    this.shadowRoot.getElementById('search').value = data.name
 
-    this.getWind(data)
+    this.shadowRoot.querySelector('.weatherIcon').setAttribute('src', this.getWeatherIcon(data))
 
-    this.getCloudiness(data)
+    this.shadowRoot.querySelector('.description').innerHTML = this.getWeatherDescription(data)
 
-    this.getPressure(data)
+    const tempValues = this.getTemp(data)
 
-    this.getHumidity(data)
+    this.shadowRoot.querySelector('.temperature').innerHTML = tempValues.temp
+    this.shadowRoot.querySelector('.feelsLikeTemp').innerHTML = tempValues.feels_like
 
-    this.getPrecipitation(data)
+    this.shadowRoot.getElementById('currentWind').innerHTML = this.getWind(data)
 
-    this.getSunrise(data)
+    this.shadowRoot.getElementById('currentClouds').innerHTML = this.getCloudiness(data)
 
-    this.getSunset(data)
+    this.shadowRoot.getElementById('currentPressure').innerHTML = this.getPressure(data)
+
+    this.shadowRoot.getElementById('currentHumidity').innerHTML = this.getHumidity(data)
+
+    this.shadowRoot.getElementById('currentPrecipitation').innerHTML = this.getPrecipitation(data)
+
+    this.shadowRoot.getElementById('currentSunrise').innerHTML = this.getSunrise(data)
+
+    this.shadowRoot.getElementById('currentSunset').innerHTML = this.getSunset(data)
   }
 
   getMainInfo (data) {
-    this.shadowRoot.querySelector('.weatherHeadline').innerText = data.name
+    // this.shadowRoot.querySelector('.weatherHeadline').innerText = data.name
     this.getWeatherIcon(data)
     this.getWeatherDescription(data)
   }
 
   getWeatherIcon (data) {
     const iconUrl = 'http://openweathermap.org/img/wn/' + data.weather[0].icon + '@2x.png'
-    this.shadowRoot.querySelector('.weatherIcon').setAttribute('src', iconUrl)
 
     return iconUrl
   }
@@ -251,23 +400,18 @@ export default class WeatherApplication extends window.HTMLElement {
   getWeatherDescription (data) {
     let descString = data.weather[0].description
     descString = descString.charAt(0).toUpperCase() + descString.slice(1)
-    this.shadowRoot.querySelector('.description').innerHTML = descString
 
     return descString
   }
 
   getTemp (data) {
-    this.shadowRoot.querySelector('.temperature').innerHTML = data.main.temp + ' °C'
-    this.shadowRoot.querySelector('.feelsLikeTemp').innerHTML = data.main.feels_like
-
-    const tempData = { temp: data.maintemp + ' °C', feels_like: data.mainfeels_like + ' °C' }
+    const tempData = { temp: data.main.temp + ' °C', feels_like: data.main.feels_like + ' °C' }
 
     return tempData
   }
 
   getWind (data) {
     const windSpeed = this.getWindName(data.wind.speed) + ' ' + data.wind.speed + ' m/s ' + this.getWindDirection(data.wind.deg)
-    this.shadowRoot.getElementById('currentWind').innerHTML = windSpeed
 
     return windSpeed
   }
@@ -287,35 +431,31 @@ export default class WeatherApplication extends window.HTMLElement {
       cloudiness = 'Overcast clouds'
     }
 
-    this.shadowRoot.getElementById('currentClouds').innerHTML = cloudiness
-
     return cloudiness
   }
 
   getPressure (data) {
     const pressure = data.main.pressure + ' hpa'
-    this.shadowRoot.getElementById('currentPressure').innerHTML = pressure
 
     return pressure
   }
 
   getHumidity (data) {
     const humidity = data.main.humidity + ' %'
-    this.shadowRoot.getElementById('currentHumidity').innerHTML = humidity
 
     return humidity
   }
 
   getPrecipitation (data) {
     let precipitationValue = '0'
-    if (data.sys.rain) {
-      precipitationValue = data.sys.rain['1h']
-    } else if (data.sys.snow) {
-      precipitationValue = data.sys.snow['1h']
+    console.log(data)
+    if (data.rain) {
+      precipitationValue = data.rain['1h']
+    } else if (data.snow) {
+      precipitationValue = data.snow['1h']
     }
 
     precipitationValue += ' mm/h'
-    this.shadowRoot.getElementById('currentPrecipitation').innerHTML = precipitationValue
 
     return precipitationValue
   }
@@ -331,7 +471,6 @@ export default class WeatherApplication extends window.HTMLElement {
       sunriseMin = '0' + sunriseMin
     }
     const sunrise = sunriseHr + ':' + sunriseMin
-    this.shadowRoot.getElementById('currentSunrise').innerHTML = sunrise
 
     return sunrise
   }
@@ -348,7 +487,6 @@ export default class WeatherApplication extends window.HTMLElement {
     }
 
     const sunset = sunsetHr + ':' + sunsetMin
-    this.shadowRoot.getElementById('currentSunset').innerHTML = sunset
 
     return sunset
   }
@@ -389,6 +527,90 @@ export default class WeatherApplication extends window.HTMLElement {
     const val = Math.floor((degrees / 22.5) + 0.5)
     const arr = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW']
     return arr[(val % 16)]
+  }
+
+  async search (e) {
+    if (e.key === 'Enter' && this.shadowRoot.getElementById('search').value.trim() !== '') {
+      const latlon = await this.getCurrentWeather(this.shadowRoot.getElementById('search').value.trim(), 'SE')
+      console.log('coord', latlon)
+      this.getWeatherForecast(latlon.lat, latlon.lon)
+    }
+  }
+
+  showCurrentWeather (e) {
+    this.shadowRoot.getElementById('currentButton').classList.add('active')
+    this.shadowRoot.getElementById('forecastButton').classList.remove('active')
+    this.shadowRoot.querySelector('.weatherInfo').style.display = 'flex'
+    this.shadowRoot.querySelector('.weatherForecast').style.display = 'none'
+  }
+
+  showForecastWeather (e) {
+    this.shadowRoot.getElementById('currentButton').classList.remove('active')
+    this.shadowRoot.getElementById('forecastButton').classList.add('active')
+    this.shadowRoot.querySelector('.weatherInfo').style.display = 'none'
+    this.shadowRoot.querySelector('.weatherForecast').style.display = 'flex'
+  }
+
+  getFormattedDate (weekday, date, month) {
+    const formattedDate = this.getDayString(weekday) + ' ' + date + ' ' + ''
+
+    return formattedDate
+  }
+
+  getDayString (dayNbr) {
+    let dayString = ''
+    switch (dayNbr) {
+      case 0:
+        dayString = 'Mon'
+        break
+      case 1:
+        dayString = 'Tue'
+        break
+      case 2:
+        dayString = 'Wed'
+        break
+      case 3:
+        dayString = 'Thu'
+        break
+      case 4:
+        dayString = 'Fri'
+        break
+      case 5:
+        dayString = 'Sat'
+        break
+      case 6:
+        dayString = 'Sun'
+        break
+    }
+    return dayString
+  }
+
+  getMonthString (monthNbr) {
+    let monthString = ''
+    switch (monthNbr) {
+      case 0:
+        monthString = 'Mon'
+        break
+      case 1:
+        monthString = 'Tue'
+        break
+      case 2:
+        monthString = 'Wed'
+        break
+      case 3:
+        monthString = 'Thu'
+        break
+      case 4:
+        monthString = 'Fri'
+        break
+      case 5:
+        monthString = 'Sat'
+        break
+      case 6:
+        monthString = 'Sun'
+        break
+    }
+    return monthString
   }
 }
 
