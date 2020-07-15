@@ -105,26 +105,106 @@ div.weatherForecast {
 ul.forecastList {
   width: 100%;
   padding: 0;
+  margin: 0;
+  margin-top: 15px;
 }
 
 ul.forecastList li {
   width: 100%;
   height: 80px;
   display: grid;
-  grid-template-columns: 1fr 3fr;
+  grid-template-columns: 2fr 3fr;
+  border-top: 1px dashed black;
+}
+
+ul.forecastList li div.day {
+  display: flex;
+  flex-direction: column;
 }
 
 ul.forecastList li div.dayHeader {
+  padding-left: 10px;
+  height: 40px;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+}
 
+ul.forecastList li div.today {
+  margin-top: auto;
+  color: grey;
+  padding-bottom: 10px;
+  padding-left: 10px;
+  font-size: 0.9rem;
+  font-style: italic;
+  /*align-self: flex-end;*/
 }
 
 ul.forecastList li div.dayInfo {
-  
+  display: flex;
+  flex-direction: column;  
+}
+
+div.dayInfo .temp {
+  display: flex;
+  width: 100%;
+  padding-top: 10px;
+  align-items: center;
+}
+
+span.dayTemp {
+  color: #ffffff;
+  font-size: 0.7rem;
+  background-color: #EB795B;
+  padding-left: 5px;
+  padding-right: 5px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  border-radius: 5px;
+}
+
+span.nightTemp {
+  margin-left: 5px;
+  color: #ffffff;
+  font-size: 0.7rem;
+  background-color: #58585A;
+  padding-left: 5px;
+  padding-right: 5px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  border-radius: 5px;
+}
+
+span.forecastDesc {
+  font-size: 0.9rem;
+  font-style: italic;
+  margin-left: 20px;
+}
+
+div.dayInfo .wind {
+  margin-top: 5px;
+  font-size: 0.9rem;
+}
+
+div.dayInfo .other {
+  margin-top: 5px;
+  font-size: 0.9rem;
 }
 
 ul.forecastList li:nth-child(2n) {
-  background: #E7F0F7;
+  /*background: #f4f4f4;*/
 }
+
+ul.forecastList li:first-child {
+  border-top: none;
+  background: #F1F1F1;
+}
+
+img.forecastIcon {
+  width: 40px;
+  height: 40px;
+}
+
 div.weatherMenu {
   margin-top: auto;
   width: 100%;
@@ -266,21 +346,31 @@ export default class WeatherApplication extends window.HTMLElement {
     super()
     this.attachShadow({ mode: 'open' })
     this.shadowRoot.appendChild(template.content.cloneNode(true))
+
+    this._lastSearch = window.localStorage.getItem('weathercity') || 'Malmö'
   }
 
   connectedCallback () {
-    this.testConnection()
+    // this.testConnection()
     this.shadowRoot.getElementById('currentButton').classList.add('active')
 
     this.shadowRoot.getElementById('search').addEventListener('keypress', (e) => this.search(e))
     this.shadowRoot.getElementById('currentButton').addEventListener('click', (e) => this.showCurrentWeather(e))
     this.shadowRoot.getElementById('forecastButton').addEventListener('click', (e) => this.showForecastWeather(e))
+
+    this.initialize()
   }
 
   disconnectedCallback () {
     this.shadowRoot.getElementById('search').removeEventListener('keypress', (e) => this.search(e))
     this.shadowRoot.getElementById('currentButton').removeEventListener('click', (e) => this.showCurrentWeather(e))
     this.shadowRoot.getElementById('forecastButton').removeEventListener('click', (e) => this.showForecastWeather(e))
+  }
+
+  async initialize () {
+    const latlon = await this.getCurrentWeather(this._lastSearch, 'SE')
+    this.shadowRoot.getElementById('search').value = this._lastSearch
+    this.getWeatherForecast(latlon.lat, latlon.lon)
   }
 
   async getCurrentWeather (city, countrycode) {
@@ -326,19 +416,78 @@ export default class WeatherApplication extends window.HTMLElement {
     // console.log(day)
     console.log(data.daily)
 
+    let firstItem = true
+
+    this.shadowRoot.querySelector('.forecastList').innerHTML = ''
+
     data.daily.forEach(day => {
       const listItem = document.createElement('li')
       const date = new Date(day.dt * 1000)
-      const dateString = date.getDay() + ' ' + date.getDate() + ' ' + date.getMonth()
+      const dateString = this.getFormattedDate(date.getDay(), date.getDate(), date.getMonth())
       const clouds = day.clouds
+      const pressure = day.pressure
+      const windSpeed = day.wind_speed
+      const windDeg = day.wind_deg
       const dayTemp = day.temp.day
       const nightTemp = day.temp.night
+      const desc = day.weather[0].description
+
+      const dayDiv = document.createElement('div')
+      dayDiv.classList.add('day')
+
       const dayHeader = document.createElement('div')
       dayHeader.classList.add('dayHeader')
       dayHeader.innerText = dateString
-      listItem.appendChild(dayHeader)
+      const icon = document.createElement('img')
+      icon.setAttribute('src', this.getWeatherIcon(day))
+      icon.classList.add('forecastIcon')
+      dayHeader.appendChild(icon)
+
+      dayDiv.appendChild(dayHeader)
+      if (firstItem) {
+        console.log('today')
+        firstItem = false
+
+        const today = document.createElement('div')
+        today.classList.add('today')
+        today.innerText = 'Today'
+        dayDiv.appendChild(today)
+      }
+
+      listItem.appendChild(dayDiv)
+
       const dayInfo = document.createElement('div')/* .classList.add('dayInfo') */
-      dayInfo.innerText = clouds + dayTemp + nightTemp
+      dayInfo.classList.add('dayInfo')
+      const temp = document.createElement('div')
+      temp.classList.add('temp')
+
+      const dayTempSpan = document.createElement('span')
+      dayTempSpan.classList.add('dayTemp')
+      dayTempSpan.innerHTML = dayTemp + ' °C'
+
+      const nightTempSpan = document.createElement('span')
+      nightTempSpan.classList.add('nightTemp')
+      nightTempSpan.innerHTML = nightTemp + ' °C'
+
+      const descSpan = document.createElement('span')
+      descSpan.classList.add('forecastDesc')
+      descSpan.innerHTML = desc
+
+      temp.appendChild(dayTempSpan)
+      temp.appendChild(nightTempSpan)
+      temp.appendChild(descSpan)
+      dayInfo.appendChild(temp)
+
+      const windDiv = document.createElement('div')
+      windDiv.classList.add('wind')
+      windDiv.innerText = windSpeed + ' m/s ' + this.getWindDirection(windDeg)
+      dayInfo.appendChild(windDiv)
+
+      const other = document.createElement('div')
+      other.classList.add('other')
+      other.innerText = 'Clouds: ' + clouds + '%, ' + pressure + ' hpa'
+      dayInfo.appendChild(other)
+
       listItem.appendChild(dayInfo)
 
       this.shadowRoot.querySelector('.forecastList').appendChild(listItem)
@@ -534,6 +683,9 @@ export default class WeatherApplication extends window.HTMLElement {
       const latlon = await this.getCurrentWeather(this.shadowRoot.getElementById('search').value.trim(), 'SE')
       console.log('coord', latlon)
       this.getWeatherForecast(latlon.lat, latlon.lon)
+
+      this._lastSearch = this.shadowRoot.getElementById('search').value.trim()
+      window.localStorage.setItem('weathercity', this.shadowRoot.getElementById('search').value.trim())
     }
   }
 
@@ -552,7 +704,7 @@ export default class WeatherApplication extends window.HTMLElement {
   }
 
   getFormattedDate (weekday, date, month) {
-    const formattedDate = this.getDayString(weekday) + ' ' + date + ' ' + ''
+    const formattedDate = this.getDayString(weekday) + ' ' + date + ' ' + this.getMonthString(month)
 
     return formattedDate
   }
@@ -560,25 +712,25 @@ export default class WeatherApplication extends window.HTMLElement {
   getDayString (dayNbr) {
     let dayString = ''
     switch (dayNbr) {
-      case 0:
+      case 1:
         dayString = 'Mon'
         break
-      case 1:
+      case 2:
         dayString = 'Tue'
         break
-      case 2:
+      case 3:
         dayString = 'Wed'
         break
-      case 3:
+      case 4:
         dayString = 'Thu'
         break
-      case 4:
+      case 5:
         dayString = 'Fri'
         break
-      case 5:
+      case 6:
         dayString = 'Sat'
         break
-      case 6:
+      case 0:
         dayString = 'Sun'
         break
     }
@@ -589,25 +741,40 @@ export default class WeatherApplication extends window.HTMLElement {
     let monthString = ''
     switch (monthNbr) {
       case 0:
-        monthString = 'Mon'
+        monthString = 'Jan'
         break
       case 1:
-        monthString = 'Tue'
+        monthString = 'Feb'
         break
       case 2:
-        monthString = 'Wed'
+        monthString = 'Mar'
         break
       case 3:
-        monthString = 'Thu'
+        monthString = 'Apr'
         break
       case 4:
-        monthString = 'Fri'
+        monthString = 'May'
         break
       case 5:
-        monthString = 'Sat'
+        monthString = 'Jun'
         break
       case 6:
-        monthString = 'Sun'
+        monthString = 'Jul'
+        break
+      case 7:
+        monthString = 'Aug'
+        break
+      case 8:
+        monthString = 'Sep'
+        break
+      case 9:
+        monthString = 'Oct'
+        break
+      case 10:
+        monthString = 'Nov'
+        break
+      case 11:
+        monthString = 'Dec'
         break
     }
     return monthString
