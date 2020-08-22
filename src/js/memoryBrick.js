@@ -74,7 +74,18 @@ img.frontside {
 </div>
 `
 
+/**
+ *
+ *
+ * @export
+ * @class MemoryBrick
+ * @extends {window.HTMLElement}
+ */
 export default class MemoryBrick extends window.HTMLElement {
+  /**
+   *Creates an instance of MemoryBrick.
+   * @memberof MemoryBrick
+   */
   constructor () {
     super()
     this.attachShadow({ mode: 'open' })
@@ -91,6 +102,11 @@ export default class MemoryBrick extends window.HTMLElement {
     this._focused = false
   }
 
+  /**
+   *
+   *
+   * @memberof MemoryBrick
+   */
   connectedCallback () {
     this.tabIndex = 1
     // this.setAttribute('tabindex', 1)
@@ -104,6 +120,11 @@ export default class MemoryBrick extends window.HTMLElement {
     this.addEventListener('blur', (e) => this.unFocusBrick(e))
   }
 
+  /**
+   *
+   *
+   * @memberof MemoryBrick
+   */
   disconnectedCallback () {
     this.shadowRoot.removeEventListener('click', (e) => this.clickBrick(e))
     this.shadowRoot.removeEventListener('keypress', (e) => this.clickBrick(e))
@@ -111,6 +132,14 @@ export default class MemoryBrick extends window.HTMLElement {
     this.removeEventListener('blur', (e) => this.unFocusBrick(e))
   }
 
+  /**
+   *
+   *
+   * @param {*} name
+   * @param {*} oldValue
+   * @param {*} newValue
+   * @memberof MemoryBrick
+   */
   attributeChangedCallback (name, oldValue, newValue) {
     if (name === 'img') {
       this.updateBrick()
@@ -119,38 +148,89 @@ export default class MemoryBrick extends window.HTMLElement {
 
   static get observedAttributes () { return ['img'] }
 
+  /**
+   *
+   *
+   * @memberof MemoryBrick
+   */
   updateBrick () {
     this._img = this.getAttribute('img')
   }
 
+  /**
+   *
+   *
+   * @param {*} e
+   * @memberof MemoryBrick
+   */
   focusBrick (e) {
     this.shadowRoot.querySelector('.pointer').style.display = 'block'
   }
 
+  /**
+   *
+   *
+   * @param {*} e
+   * @memberof MemoryBrick
+   */
   unFocusBrick (e) {
     this.shadowRoot.querySelector('.pointer').style.display = 'none'
   }
 
+  /**
+   *
+   *
+   * @readonly
+   * @memberof MemoryBrick
+   */
   get img () {
     return this._img
   }
 
+  /**
+   *
+   *
+   * @memberof MemoryBrick
+   */
   get focused () {
     return this._focused
   }
 
+  /**
+   *
+   *
+   * @memberof MemoryBrick
+   */
   set focused (focus) {
     this._focused = focus
   }
 
+  /**
+   *
+   *
+   * @readonly
+   * @memberof MemoryBrick
+   */
   get matched () {
     return this._matched
   }
 
+  /**
+   *
+   *
+   * @param {*} e
+   * @memberof MemoryBrick
+   */
   testSpace (e) {
     console.log(e)
   }
 
+  /**
+   *
+   *
+   * @param {*} e
+   * @memberof MemoryBrick
+   */
   clickBrick (e) {
     // this.blur()
     // e.preventDefault()
@@ -167,6 +247,12 @@ export default class MemoryBrick extends window.HTMLElement {
     }
   }
 
+  /**
+   *
+   *
+   * @param {*} e
+   * @memberof MemoryBrick
+   */
   toggleView (e) {
     if (this._reveal && !this._matched) {
       this._reveal = false
@@ -191,6 +277,11 @@ export default class MemoryBrick extends window.HTMLElement {
     this.dispatchEvent(this._clickBrick) */
   }
 
+  /**
+   *
+   *
+   * @memberof MemoryBrick
+   */
   match () {
     // this.tabIndex = -1
     // this.removeAttribute('tabindex')

@@ -29,6 +29,7 @@
     "node": ">=7.0.0"
   },
   "dependencies": {
+    "moment": "^2.27.0"
   },
   "devDependencies": {
     "css-loader": "*",

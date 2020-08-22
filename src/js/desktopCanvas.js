@@ -55,7 +55,18 @@ let jumps = 0
 let row = 0
 // let zIndex = 1
 
+/**
+ *
+ *
+ * @export
+ * @class Desktop
+ * @extends {window.HTMLElement}
+ */
 export default class Desktop extends window.HTMLElement {
+  /**
+   *Creates an instance of Desktop.
+   * @memberof Desktop
+   */
   constructor () {
     super()
     this.attachShadow({ mode: 'open' })
@@ -66,6 +77,11 @@ export default class Desktop extends window.HTMLElement {
     this._weatherAppSet = new window.Set()
   }
 
+  /**
+   *
+   *
+   * @memberof Desktop
+   */
   connectedCallback () {
     this.shadowRoot.addEventListener('menuIconClick', (e) => this.addWindow(e))
     this.shadowRoot.addEventListener('displayContextMenu', (e) => this.displayContextMenu(e))
@@ -75,6 +91,11 @@ export default class Desktop extends window.HTMLElement {
     this.shadowRoot.addEventListener('restoreWindow', (e) => this.restoreWindow(e))
   }
 
+  /**
+   *
+   *
+   * @memberof Desktop
+   */
   disconnectedCallback () {
     this.shadowRoot.removeEventListener('menuIconClick', (e) => this.addWindow(e))
     this.shadowRoot.removeEventListener('displayContextMenu', (e) => this.displayContextMenu(e))
@@ -84,6 +105,12 @@ export default class Desktop extends window.HTMLElement {
     this.shadowRoot.addEventListener('restoreWindow', (e) => this.restoreWindow(e))
   }
 
+  /**
+   *
+   *
+   * @param {*} e
+   * @memberof Desktop
+   */
   addWindow (e) {
     this.setOverlap()
 
@@ -123,6 +150,13 @@ export default class Desktop extends window.HTMLElement {
     console.log(this._chatAppSet)
   }
 
+  /**
+   *
+   *
+   * @param {*} name
+   * @param {*} id
+   * @memberof Desktop
+   */
   addToList (name, id) {
     console.log('ADD')
     console.log(name)
@@ -139,6 +173,13 @@ export default class Desktop extends window.HTMLElement {
     }
   }
 
+  /**
+   *
+   *
+   * @param {*} name
+   * @param {*} id
+   * @memberof Desktop
+   */
   removeFromList (name, id) {
     console.log('SWITCH')
     switch (name) {
@@ -155,6 +196,13 @@ export default class Desktop extends window.HTMLElement {
     }
   }
 
+  /**
+   *
+   *
+   * @param {*} name
+   * @returns
+   * @memberof Desktop
+   */
   getList (name) {
     console.log(name)
     switch (name) {
@@ -168,6 +216,12 @@ export default class Desktop extends window.HTMLElement {
     }
   }
 
+  /**
+   *
+   *
+   * @param {*} e
+   * @memberof Desktop
+   */
   displayContextMenu (e) {
     e.stopPropagation()
     e.cancelBubble = true
@@ -176,6 +230,12 @@ export default class Desktop extends window.HTMLElement {
     e.target.showContext(e, this.getList(e.detail.appname))
   }
 
+  /**
+   *
+   *
+   * @param {*} e
+   * @memberof Desktop
+   */
   deleteWindow (e) {
     console.log('DElETE WINDOW' + e.detail.name)
     e.stopPropagation()
@@ -187,6 +247,12 @@ export default class Desktop extends window.HTMLElement {
 
   }
 
+  /**
+   *
+   *
+   * @param {*} e
+   * @memberof Desktop
+   */
   restoreWindow (e) {
     e.stopPropagation()
     e.cancelBubble = true
@@ -195,6 +261,12 @@ export default class Desktop extends window.HTMLElement {
     this.shadowRoot.getElementById(windowID).restoreWindow()
   }
 
+  /**
+   *
+   *
+   * @param {*} e
+   * @memberof Desktop
+   */
   closeAll (e) {
     console.log(e)
     e.stopPropagation()
@@ -207,6 +279,12 @@ export default class Desktop extends window.HTMLElement {
     })
   }
 
+  /**
+   *
+   *
+   * @param {*} e
+   * @memberof Desktop
+   */
   minimizeAll (e) {
     e.stopPropagation()
     e.cancelBubble = true
@@ -217,12 +295,23 @@ export default class Desktop extends window.HTMLElement {
     })
   }
 
+  /**
+   *
+   *
+   * @param {*} windowID
+   * @memberof Desktop
+   */
   updateWindowTitle (windowID) {
     console.log(windowID)
     console.log(document.getElementById(windowID))
     document.getElementById(windowID).updateTitle('test')
   }
 
+  /**
+   *
+   *
+   * @memberof Desktop
+   */
   setOverlap () {
     if (this.shadowRoot.getElementById('canvas').hasChildNodes()) {
       for (let i = 0; i < this.shadowRoot.getElementById('canvas').children.length; i++) {
@@ -233,6 +322,12 @@ export default class Desktop extends window.HTMLElement {
     }
   }
 
+  /**
+   *
+   *
+   * @returns
+   * @memberof Desktop
+   */
   checkMaximized () {
     if (this.shadowRoot.getElementById('canvas').hasChildNodes()) {
       for (let i = 0; i < this.shadowRoot.getElementById('canvas').children.length; i++) {

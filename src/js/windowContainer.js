@@ -146,7 +146,18 @@ let currentX
 let yOffset = 0
 let xOffset = 0 */
 
+/**
+ *
+ *
+ * @export
+ * @class WindowContainer
+ * @extends {window.HTMLElement}
+ */
 export default class WindowContainer extends window.HTMLElement {
+  /**
+   *Creates an instance of WindowContainer.
+   * @memberof WindowContainer
+   */
   constructor () {
     super()
     this.attachShadow({ mode: 'open' })
@@ -178,6 +189,11 @@ export default class WindowContainer extends window.HTMLElement {
     this.shadowRoot.querySelector('.applicationName').innerHTML = this._name
   }
 
+  /**
+   *
+   *
+   * @memberof WindowContainer
+   */
   connectedCallback () {
     // Make focusable
     this.tabIndex = 1
@@ -188,17 +204,35 @@ export default class WindowContainer extends window.HTMLElement {
     this.subscribeListeners()
   }
 
+  /**
+   *
+   *
+   * @memberof WindowContainer
+   */
   disconnectedCallback () {
     // Unsubscribe to event listeners
     this.unsubscribeListeners()
   }
 
+  /**
+   *
+   *
+   * @param {*} name
+   * @param {*} oldValue
+   * @param {*} newValue
+   * @memberof WindowContainer
+   */
   attributeChangedCallback (name, oldValue, newValue) {
     this.updateApp()
   }
 
   static get observedAttributes () { return ['id', 'icon', 'fullname', 'appname'] }
 
+  /**
+   *
+   *
+   * @memberof WindowContainer
+   */
   set id (id) {
     this._windowID = id
     /* .log('TESTID' + this.shadowRoot.querySelector('div.window').id) */
@@ -212,31 +246,69 @@ export default class WindowContainer extends window.HTMLElement {
     })
   }
 
+  /**
+   *
+   *
+   * @memberof WindowContainer
+   */
   get id () {
     return this._windowID
   }
 
+  /**
+   *
+   *
+   * @memberof WindowContainer
+   */
   set zIndex (index) {
     this._zIndex = index
     this.shadowRoot.querySelector('div.windowContainer').style.zIndex = this._zIndex
   }
 
+  /**
+   *
+   *
+   * @memberof WindowContainer
+   */
   get zIndex () {
     return this._zIndex
   }
 
+  /**
+   *
+   *
+   * @readonly
+   * @memberof WindowContainer
+   */
   get appname () {
     return this._appname
   }
 
+  /**
+   *
+   *
+   * @readonly
+   * @memberof WindowContainer
+   */
   get fullname () {
     return this._fullname
   }
 
+  /**
+   *
+   *
+   * @readonly
+   * @memberof WindowContainer
+   */
   get isMaximized () {
     return this._maximized
   }
 
+  /**
+   *
+   *
+   * @memberof WindowContainer
+   */
   updateApp () {
     this._windowID = this.getAttribute('id')
     this._icon = this.getAttribute('icon')
@@ -255,12 +327,25 @@ export default class WindowContainer extends window.HTMLElement {
     })
   }
 
+  /**
+   *
+   *
+   * @param {*} e
+   * @memberof WindowContainer
+   */
   updateTitle (e) {
     this.shadowRoot.querySelector('.applicationTitle').innerText = ' - ' + e.detail.title
     e.stopPropagation()
     e.cancelBubble = true
   }
 
+  /**
+   *
+   *
+   * @param {*} step
+   * @param {*} row
+   * @memberof WindowContainer
+   */
   jump (step, row) {
     const desktopWindow = this.shadowRoot.querySelector('div.windowContainer')
     // const desktopWindowStyles = window.getComputedStyle(desktopWindow, null)
@@ -289,6 +374,11 @@ export default class WindowContainer extends window.HTMLElement {
     // console.log(desktopWindow.style.top)
   }
 
+  /**
+   *
+   *
+   * @memberof WindowContainer
+   */
   focusWindow () {
     /* document.body.querySelector('window-handler').shadowRoot.querySelector('div.window').style.background = 'rgba(178, 178, 178, 0.5)' */
     this.shadowRoot.querySelector('div.windowContainer').style.background = 'rgba(128, 128, 128, 0.9)'
@@ -297,6 +387,11 @@ export default class WindowContainer extends window.HTMLElement {
     console.log(this.zIndex)
   }
 
+  /**
+   *
+   *
+   * @memberof WindowContainer
+   */
   unFocusWindow () {
     if (!this._maximized) {
       this.shadowRoot.querySelector('div.windowContainer').style.background = 'rgba(128, 128, 128, 0.5)'
@@ -308,6 +403,12 @@ export default class WindowContainer extends window.HTMLElement {
     console.log(this.zIndex)
   }
 
+  /**
+   *
+   *
+   * @param {*} e
+   * @memberof WindowContainer
+   */
   dragStart (e) {
     console.log(this._maximized)
     if (!this._maximized) {
@@ -323,6 +424,12 @@ export default class WindowContainer extends window.HTMLElement {
     }
   }
 
+  /**
+   *
+   *
+   * @param {*} e
+   * @memberof WindowContainer
+   */
   drag (e) {
     if (this._active && !this._maximized) {
       e = e || window.event
@@ -348,6 +455,12 @@ export default class WindowContainer extends window.HTMLElement {
     }
   }
 
+  /**
+   *
+   *
+   * @param {*} e
+   * @memberof WindowContainer
+   */
   dragStop (e) {
     if (!this._maximized) {
       this.shadowRoot.querySelector('div.topbar').style.cursor = 'auto'
@@ -360,6 +473,13 @@ export default class WindowContainer extends window.HTMLElement {
     }
   }
 
+  /**
+   *
+   *
+   * @param {*} xPos
+   * @param {*} yPos
+   * @memberof WindowContainer
+   */
   move (xPos, yPos) {
     console.log('MOVEIT MOVEIT')
     /* const desktopWindow = this.shadowRoot.querySelector('div.window') */
@@ -394,11 +514,23 @@ export default class WindowContainer extends window.HTMLElement {
     /* desktopWindow.style.transform = 'translate3d(' + xPos + 'px, ' + yPos + 'px, 0)' */
   }
 
+  /**
+   *
+   *
+   * @param {*} e
+   * @memberof WindowContainer
+   */
   closeWindow (e) {
     this.dispatchEvent(this._closeEvent)
     this.remove()
   }
 
+  /**
+   *
+   *
+   * @param {*} e
+   * @memberof WindowContainer
+   */
   maximizeWindowToggle (e) {
     if (!this._maximized) {
       const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
@@ -432,6 +564,12 @@ export default class WindowContainer extends window.HTMLElement {
     }
   }
 
+  /**
+   *
+   *
+   * @param {*} e
+   * @memberof WindowContainer
+   */
   minimizeWindow (e) {
     /* const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0) */
     const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0)
@@ -440,12 +578,22 @@ export default class WindowContainer extends window.HTMLElement {
     this.shadowRoot.querySelector('div.windowContainer').style.transform = 'translate3d(' + 0 + 'px, ' + vh + 'px, 0)'
   }
 
+  /**
+   *
+   *
+   * @memberof WindowContainer
+   */
   restoreWindow () {
     this.focus()
     this.shadowRoot.querySelector('div.windowContainer').classList.remove('minimized')
     this.shadowRoot.querySelector('div.windowContainer').style.transform = 'translate3d(' + this._initialX + 'px, ' + this._initialY + 'px, 0)'
   }
 
+  /**
+   *
+   *
+   * @memberof WindowContainer
+   */
   subscribeListeners () {
     // Add eventlisteners for focus
     this.addEventListener('focus', () => this.focusWindow(), false)
@@ -472,6 +620,11 @@ export default class WindowContainer extends window.HTMLElement {
     this.shadowRoot.addEventListener('titleUpdate', (e) => this.updateTitle(e))
   }
 
+  /**
+   *
+   *
+   * @memberof WindowContainer
+   */
   unsubscribeListeners () {
     // Remove eventlisteners for focus
     this.removeEventListener('focus', () => this.focusWindow())

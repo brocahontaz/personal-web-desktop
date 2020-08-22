@@ -4,12 +4,6 @@ template.innerHTML = `
 <link rel="stylesheet" href="../css/font-awesome-4.7.0/css/font-awesome.css">
 <style>
 div {
-    /*width: 50px;
-    height: 50px;
-    /*border-radius: 4px;*/
-    /*background-color: white;*/
-    /*margin-right: 5px;
-    /*cursor: pointer;*/
     transition: height 5s ease-out;
 }
 /*
@@ -20,8 +14,6 @@ div:hover {
 div.iconContainer {
     width: 50px;
     height: 50px;
-    /*border-radius: 4px;*/
-    /*background-color: white;*/
     margin-right: 5px;
     cursor: pointer;
 }
@@ -84,7 +76,6 @@ div.contextMenu hr {
   height: 1px;
   border: 0;
   width: 50%;
-  /*margin-left: 25%;*/
 }
 
 div.contextMenu #showAll {
@@ -109,10 +100,8 @@ div.contextMenu .collapsibleList {
   padding: 0;
   margin: 0;
   display: none;
-  /*visibility: hidden;*/
   height: 0;
   transition: max-height 0.5s ease-out;
-  /*animation: moveup 0.5s 1;*/
 }
 
 ul.contextOptions {
@@ -125,7 +114,6 @@ ul.contextList {
     list-style-type: none;
     margin: 0;
     padding: 0;
-    /*display: none;*/
 }
 
 ul.contextOptions li {
@@ -142,8 +130,6 @@ ul.contextList li {
     font-size: 0.9rem;
     margin: 0;
     padding: 15px;
-    /*display: flex;
-    flex-direction: row;*/
 }
 
 ul.contextList li:hover{
@@ -226,11 +212,21 @@ button.expand:active {
   <div class="iconContainer">
     <img>
   </div>
-<!--<img>-->
 </div>
 `
 
+/**
+ * Webcomponent module for the menu icons
+ *
+ * @export
+ * @class MenuIcon
+ * @extends {window.HTMLElement}
+ */
 export default class MenuIcon extends window.HTMLElement {
+  /**
+   *Creates an instance of MenuIcon.
+   * @memberof MenuIcon
+   */
   constructor () {
     super()
     this.attachShadow({ mode: 'open' })
@@ -263,20 +259,43 @@ export default class MenuIcon extends window.HTMLElement {
     })
   }
 
+  /**
+   * Get the app name
+   *
+   * @readonly
+   * @memberof MenuIcon
+   */
   get appname () {
     return this._appname
   }
 
+  /**
+   * Get the app full name
+   *
+   * @readonly
+   * @memberof MenuIcon
+   */
   get fullname () {
     return this._fullname
   }
 
+  /**
+   * Get the icon
+   *
+   * @readonly
+   * @memberof MenuIcon
+   */
   get icon () {
     return this._icon
   }
 
+  /**
+   * Connected callback, called when element is created
+   * Adding event listeners etc
+   *
+   * @memberof MenuIcon
+   */
   connectedCallback () {
-    console.log('connected icon')
     this.shadowRoot.querySelector('.iconContainer').addEventListener('click', (e) => this.onClick(e))
     this.shadowRoot.querySelector('.iconContainer').addEventListener('contextmenu', (e) => this.displayContextMenu(e))
     this.shadowRoot.getElementById('showAll').addEventListener('click', (e) => this.showAll(e))
@@ -288,6 +307,12 @@ export default class MenuIcon extends window.HTMLElement {
     document.addEventListener('contextmenu', (e) => this.hideContext(e))
   }
 
+  /**
+   * Disconnected callback, called when element is destroyed
+   * Removing event listeners etc
+   *
+   * @memberof MenuIcon
+   */
   disconnectedCallback () {
     this.shadowRoot.querySelector('.iconContainer').removeEventListener('click', (e) => this.onClick(e))
     this.shadowRoot.querySelector('.iconContainer').removeEventListener('contextmenu', (e) => this.displayContextMenu(e))
@@ -300,6 +325,12 @@ export default class MenuIcon extends window.HTMLElement {
     document.removeEventListener('contextmenu', (e) => this.hideContext(e))
   }
 
+  /**
+   * Click event, open new window if left click, open context menu if right click
+   *
+   * @param {Event} e the event
+   * @memberof MenuIcon
+   */
   onClick (e) {
     if (e.button === 0) {
       this.openWindow(e)
@@ -308,29 +339,41 @@ export default class MenuIcon extends window.HTMLElement {
     }
   }
 
+  /**
+   * Open new window of the application
+   *
+   * @param {Event} e the event
+   * @memberof MenuIcon
+   */
   openWindow (e) {
-    console.log('HEJ')
-    // document.querySelector('desktop-canvas').addWindow(this.icon, this.fullname, this.appname)
     this.hideContext(e)
     this.dispatchEvent(this._clickEvent)
   }
 
+  /**
+   * Dispatch event for displaying context menu
+   *
+   * @param {Event} e the event
+   * @memberof MenuIcon
+   */
   displayContextMenu (e) {
     e.preventDefault()
-    console.log('context')
     this.dispatchEvent(this._contextMenuEvent)
   }
 
+  /**
+   * Show the context menu
+   *
+   * @param {Event} e the event
+   * @param {Set} list the list of open windows
+   * @memberof MenuIcon
+   */
   showContext (e, list) {
-    console.log(list)
-    /* this.shadowRoot.getElementById('showAll').style.display = 'block' */
-    // this.shadowRoot.querySelector('.collapsibleList').style.maxHeight = null
     this.shadowRoot.querySelector('.collapsibleList').style.height = null
-    // this.shadowRoot.querySelector('.collapsibleList').style.visibility = 'hidden'
     this.shadowRoot.querySelector('.collapsibleList').style.display = 'none'
     this.shadowRoot.querySelector('.shrinkIcon').style.display = 'none'
     this.shadowRoot.querySelector('.expandIcon').style.display = 'block'
-    // list.forEach(element => this.displayWindowInContext(element))
+
     if (this._contextMenu) {
       this._instanceList = list
       this.updateList()
@@ -346,10 +389,14 @@ export default class MenuIcon extends window.HTMLElement {
     }
   }
 
+  /**
+   * Update the context menu window list
+   *
+   * @memberof MenuIcon
+   */
   updateList () {
     this.shadowRoot.querySelector('.contextList').innerHTML = ''
     this._instanceList.forEach(element => {
-      console.log(element)
       const listElem = document.createElement('li')
       listElem.id = element
       listElem.innerText = element + '. ' + this._fullname
@@ -357,59 +404,74 @@ export default class MenuIcon extends window.HTMLElement {
     })
   }
 
+  /**
+   * Add window to the context menu list
+   *
+   * @param {*} element
+   * @memberof MenuIcon
+   */
   displayWindowInContext (element) {
-    console.log(element)
     const listElem = document.createElement('li')
     listElem.innerText = element + '. ' + this._fullname
     this.shadowRoot.querySelector('.contextList').appendChild(listElem)
   }
 
+  /**
+   * Hide the context menu
+   *
+   * @param {Event} e the event
+   * @memberof MenuIcon
+   */
   hideContext (e) {
-    console.log('blalalal')
     if (e.target !== this) {
-      // .log('jaha? ' + this._contextMenu)
-      // console.log('nähä')
       this.shadowRoot.querySelector('.contextMenu').style.display = 'none'
       this.shadowRoot.querySelector('.contextWrapper').style.display = 'none'
       this._contextMenu = false
     }
   }
 
+  /**
+   * Show all open windows of an application in its context menu
+   *
+   * @param {Event} e the event
+   * @memberof MenuIcon
+   */
   showAll (e) {
-    /* this.shadowRoot.getElementById('showAll').style.display = 'none' */
     const list = this.shadowRoot.querySelector('.collapsibleList')
+
     if (this.shadowRoot.querySelector('.contextList').hasChildNodes()) {
       if (list.style.height) {
-        // list.style.maxHeight = null
         list.style.height = null
-        // this.shadowRoot.querySelector('.collapsibleList').style.visibility = 'hidden'
         this.shadowRoot.querySelector('.collapsibleList').style.display = 'none'
         this.shadowRoot.querySelector('.shrinkIcon').style.display = 'none'
         this.shadowRoot.querySelector('.expandIcon').style.display = 'block'
-        // this.shadowRoot.querySelector('.collapsibleList').classList.remove('.moveup')
-        // this.shadowRoot.querySelector('.collapsibleList').classList.add('.movedown')
       } else {
-        // list.style.maxHeight = '500px'
         list.style.height = 'auto'
-        // this.shadowRoot.querySelector('.collapsibleList').style.visibility = 'visible'
         this.shadowRoot.querySelector('.collapsibleList').style.display = 'block'
         this.shadowRoot.querySelector('.shrinkIcon').style.display = 'block'
         this.shadowRoot.querySelector('.expandIcon').style.display = 'none'
-        // this.shadowRoot.querySelector('.collapsibleList').classList.remove('.movedown')
-        // this.shadowRoot.querySelector('.collapsibleList').classList.add('.moveup')
       }
     }
-
-    // this.shadowRoot.querySelector('.contextList').style.display = 'block'
   }
 
+  /**
+   * Dispatch event for minimizing all windows of an appliation
+   *
+   * @param {e} e the event
+   * @memberof MenuIcon
+   */
   minimizeAll (e) {
     this.dispatchEvent(this._minimizeAllEvent)
   }
 
+  /**
+   * Dispatch event for restoring a minimized window
+   *
+   * @param {Event} e the event
+   * @memberof MenuIcon
+   */
   restoreWindow (e) {
     const windowID = e.target.id
-    console.log(windowID)
     const restoreEvent = new window.CustomEvent('restoreWindow', {
       bubbles: true,
       cancelable: true,
@@ -418,6 +480,12 @@ export default class MenuIcon extends window.HTMLElement {
     this.dispatchEvent(restoreEvent)
   }
 
+  /**
+   * Dispatch event for closing all windows of an application
+   *
+   * @param {Event} e the event
+   * @memberof MenuIcon
+   */
   closeAll (e) {
     this.shadowRoot.querySelector('.shrinkIcon').style.display = 'none'
     this.shadowRoot.querySelector('.expandIcon').style.display = 'block'

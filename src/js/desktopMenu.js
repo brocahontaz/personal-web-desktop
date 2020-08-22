@@ -18,7 +18,18 @@ div#menu {
 </div>
 `
 
+/**
+ *
+ *
+ * @export
+ * @class DesktopMenu
+ * @extends {window.HTMLElement}
+ */
 export default class DesktopMenu extends window.HTMLElement {
+  /**
+   *Creates an instance of DesktopMenu.
+   * @memberof DesktopMenu
+   */
   constructor () {
     super()
     this.attachShadow({ mode: 'open' })

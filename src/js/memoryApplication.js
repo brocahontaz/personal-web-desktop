@@ -222,7 +222,18 @@ ol {
 <div>
 `
 
+/**
+ *
+ *
+ * @export
+ * @class MemoryApplication
+ * @extends {window.HTMLElement}
+ */
 export default class MemoryApplication extends window.HTMLElement {
+  /**
+   *Creates an instance of MemoryApplication.
+   * @memberof MemoryApplication
+   */
   constructor () {
     super()
     this.attachShadow({ mode: 'open' })
@@ -243,6 +254,11 @@ export default class MemoryApplication extends window.HTMLElement {
     this._over = false
   }
 
+  /**
+   *
+   *
+   * @memberof MemoryApplication
+   */
   connectedCallback () {
     // this.populateArray(9)
     // this.shuffleImages()
@@ -264,6 +280,11 @@ export default class MemoryApplication extends window.HTMLElement {
     this.shadowRoot.querySelector('.memoryGrid').addEventListener('keypress', (e) => this.move(e))
   }
 
+  /**
+   *
+   *
+   * @memberof MemoryApplication
+   */
   disconnectedCallback () {
     this.shadowRoot.removeEventListener('clickBrick', (e) => this.clickBrick(e))
 
@@ -276,6 +297,12 @@ export default class MemoryApplication extends window.HTMLElement {
     this.shadowRoot.querySelector('.memoryGrid').removeEventListener('keypress', (e) => this.move(e))
   }
 
+  /**
+   *
+   *
+   * @param {*} e
+   * @memberof MemoryApplication
+   */
   move (e) {
     e.preventDefault()
     e.stopPropagation()
@@ -328,6 +355,12 @@ export default class MemoryApplication extends window.HTMLElement {
     }
   }
 
+  /**
+   *
+   *
+   * @param {*} e
+   * @memberof MemoryApplication
+   */
   startGame (e) {
     this.resetGame()
     this._testInterval = setInterval(this.testTimer.bind(this), 1000)
@@ -374,6 +407,13 @@ export default class MemoryApplication extends window.HTMLElement {
     this.shadowRoot.querySelector('.memoryGrid').firstElementChild.focus()
   }
 
+  /**
+   *
+   *
+   * @param {*} columns
+   * @param {*} rows
+   * @memberof MemoryApplication
+   */
   setGrid (columns, rows) {
     let gridCols = ''
     let gridRows = ''
@@ -387,11 +427,22 @@ export default class MemoryApplication extends window.HTMLElement {
     this.shadowRoot.querySelector('.memoryGrid').style.gridTemplateRows = gridRows
   }
 
+  /**
+   *
+   *
+   * @param {*} images
+   * @memberof MemoryApplication
+   */
   populateArray (images) {
     this._imageArray = [...Array(images).keys(), ...Array(images).keys()].filter(img => img !== 0).map(nbr => `${nbr}.png`)
     console.log('arr', this._imageArray)
   }
 
+  /**
+   *
+   *
+   * @memberof MemoryApplication
+   */
   shuffleImages () {
     for (let i = this._imageArray.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * i)
@@ -401,6 +452,11 @@ export default class MemoryApplication extends window.HTMLElement {
     }
   }
 
+  /**
+   *
+   *
+   * @memberof MemoryApplication
+   */
   displayMemoryGrid () {
     this._imageArray.forEach(element => {
       if (element !== '0.png') {
@@ -412,6 +468,11 @@ export default class MemoryApplication extends window.HTMLElement {
     })
   }
 
+  /**
+   *
+   *
+   * @memberof MemoryApplication
+   */
   displayMemoryGridNew () {
     let itr = 0
     this._imageArray.forEach(element => {
@@ -425,6 +486,12 @@ export default class MemoryApplication extends window.HTMLElement {
     // console.log(this._startTime)
   }
 
+  /**
+   *
+   *
+   * @param {*} e
+   * @memberof MemoryApplication
+   */
   clickBrick (e) {
     e.stopPropagation()
     e.cancelBubble = true
@@ -450,6 +517,12 @@ export default class MemoryApplication extends window.HTMLElement {
     }
   }
 
+  /**
+   *
+   *
+   * @returns
+   * @memberof MemoryApplication
+   */
   checkMatch () {
     const arr = Array.from(this._revealed.values())
     console.log('arg', arr)
@@ -478,16 +551,31 @@ export default class MemoryApplication extends window.HTMLElement {
     }
   }
 
+  /**
+   *
+   *
+   * @memberof MemoryApplication
+   */
   incrementClicks () {
     this._nbrOfClicks++
     this.shadowRoot.getElementById('clicks').innerText = this._nbrOfClicks
   }
 
+  /**
+   *
+   *
+   * @memberof MemoryApplication
+   */
   testTimer () {
     this.shadowRoot.getElementById('timer').innerText = this._elapsed++
     // console.log(Date.now())
   }
 
+  /**
+   *
+   *
+   * @memberof MemoryApplication
+   */
   gameOver () {
     clearInterval(this._testInterval)
     this.shadowRoot.querySelector('.memoryGame').style.display = 'none'
@@ -508,6 +596,11 @@ export default class MemoryApplication extends window.HTMLElement {
     console.log(this)
   }
 
+  /**
+   *
+   *
+   * @memberof MemoryApplication
+   */
   resetGame () {
     this._over = false
     this._currentScore = 0
@@ -517,6 +610,14 @@ export default class MemoryApplication extends window.HTMLElement {
     this.shadowRoot.getElementById('clicks').innerText = 0
   }
 
+  /**
+   *
+   *
+   * @param {*} playTime
+   * @param {*} clicks
+   * @returns
+   * @memberof MemoryApplication
+   */
   calculateScore (playTime, clicks) {
     console.log(playTime)
     const score = (100 - clicks) / (playTime / 1000) * this._scoreMultiplier
@@ -524,6 +625,12 @@ export default class MemoryApplication extends window.HTMLElement {
     return score
   }
 
+  /**
+   *
+   *
+   * @param {*} e
+   * @memberof MemoryApplication
+   */
   saveScore (e) {
     this.shadowRoot.querySelector('.result').style.display = 'none'
     const name = this.shadowRoot.getElementById('name').value
@@ -537,6 +644,11 @@ export default class MemoryApplication extends window.HTMLElement {
     this.populateScores()
   }
 
+  /**
+   *
+   *
+   * @memberof MemoryApplication
+   */
   getHighScores () {
     const scores = JSON.parse(window.localStorage.getItem('highScore') || '[]')
     const updatedScores = scores.sort((a, b) => b.score - a.score).slice(0, 10)
@@ -544,6 +656,11 @@ export default class MemoryApplication extends window.HTMLElement {
     console.log(updatedScores)
   }
 
+  /**
+   *
+   *
+   * @memberof MemoryApplication
+   */
   populateScores () {
     const list = this.shadowRoot.querySelector('.highScore ol')
     list.innerHTML = ''
@@ -555,6 +672,12 @@ export default class MemoryApplication extends window.HTMLElement {
     })
   }
 
+  /**
+   *
+   *
+   * @param {*} match
+   * @memberof MemoryApplication
+   */
   async clearGrid (match) {
     const arr = Array.from(this._revealed.keys())
     if (match) {
@@ -577,10 +700,23 @@ export default class MemoryApplication extends window.HTMLElement {
     }
   }
 
+  /**
+   *
+   *
+   * @param {*} ms
+   * @returns
+   * @memberof MemoryApplication
+   */
   sleep (ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
   }
 
+  /**
+   *
+   *
+   * @param {*} id
+   * @memberof MemoryApplication
+   */
   focusNext (id) {
     if (id === this._columns * this._rows) {
       id = 0

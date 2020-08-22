@@ -202,12 +202,23 @@ button#send {
 </div>
 `
 
+/**
+ * Webcomponent module for the chat application
+ *
+ * @export the application
+ * @class ChatApplication
+ * @extends {window.HTMLElement}
+ */
 export default class ChatApplication extends window.HTMLElement {
+  /**
+   *Creates an instance of ChatApplication.
+   * @memberof ChatApplication
+   */
   constructor () {
     super()
     this.attachShadow({ mode: 'open' })
     this.shadowRoot.appendChild(template.content.cloneNode(true))
-    /* this.shadowRoot.querySelector('h1').innerText = this.getAttribute('name') */
+
     this._websocket = new window.WebSocket('ws://vhost3.lnu.se:20080/socket/')
     this._apikey = 'eDBE76deU7L0H9mEBgxUKVR0VCnq0XBd'
     this._username = window.localStorage.getItem('username') || ''
@@ -221,6 +232,11 @@ export default class ChatApplication extends window.HTMLElement {
     })
   }
 
+  /**
+   *
+   *
+   * @memberof ChatApplication
+   */
   connectedCallback () {
     this.subscribeListeners()
     // this.testMessage()
@@ -233,26 +249,48 @@ export default class ChatApplication extends window.HTMLElement {
     }
   }
 
+  /**
+   *
+   *
+   * @memberof ChatApplication
+   */
   disconnectedCallback () {
     this.unsubscribeListeners()
     this._websocket.close()
   }
 
+  /**
+   *
+   *
+   * @param {*} name
+   * @param {*} oldValue
+   * @param {*} newValue
+   * @memberof ChatApplication
+   */
   attributeChangedCallback (name, oldValue, newValue) {
     this.updateApp()
   }
 
   static get observedAttributes () { return ['channel'] }
 
+  /**
+   *
+   *
+   * @memberof ChatApplication
+   */
   subscribeListeners () {
     this._websocket.addEventListener('message', (e) => this.receiveMessage(e))
-    /* this._websocket.addEventListener('open', (e) => this.connectedMessage(e)) */
     this.shadowRoot.getElementById('msgInput').addEventListener('keypress', (e) => this.enterMessage(e))
     this.shadowRoot.getElementById('send').addEventListener('click', (e) => this.enterMessage(e))
     this.shadowRoot.getElementById('settings').addEventListener('click', (e) => this.toggleSettings(e))
     this.shadowRoot.getElementById('save').addEventListener('click', (e) => this.saveSettings(e))
   }
 
+  /**
+   *
+   *
+   * @memberof ChatApplication
+   */
   unsubscribeListeners () {
     this._websocket.removeEventListener('message', (e) => this.receiveMessage(e))
     /* this._websocket.removeEventListener('open', (e) => this.connectedMessage(e)) */
@@ -262,6 +300,12 @@ export default class ChatApplication extends window.HTMLElement {
     this.shadowRoot.getElementById('save').removeEventListener('click', (e) => this.saveSettings(e))
   }
 
+  /**
+   *
+   *
+   * @param {*} e
+   * @memberof ChatApplication
+   */
   enterMessage (e) {
     console.log(e)
     if (!e.shiftKey && (e.key === 'Enter' || e.button === 0) && this.shadowRoot.getElementById('msgInput').value.trim() !== '') {
@@ -280,6 +324,12 @@ export default class ChatApplication extends window.HTMLElement {
     }
   }
 
+  /**
+   *
+   *
+   * @param {*} e
+   * @memberof ChatApplication
+   */
   toggleSettings (e) {
     if (!this._settingsActive) {
       this.shadowRoot.getElementById('msgInput').style.display = 'none'
@@ -295,6 +345,11 @@ export default class ChatApplication extends window.HTMLElement {
     }
   }
 
+  /**
+   *
+   *
+   * @memberof ChatApplication
+   */
   testMessage () {
     const testMsg = {
       type: 'message',
@@ -306,6 +361,12 @@ export default class ChatApplication extends window.HTMLElement {
     this.sendMessage(testMsg)
   }
 
+  /**
+   *
+   *
+   * @param {*} data
+   * @memberof ChatApplication
+   */
   displayMessage (data) {
     const messageItem = document.createElement('li')
     const userName = document.createElement('span')
@@ -319,6 +380,12 @@ export default class ChatApplication extends window.HTMLElement {
     this.shadowRoot.querySelector('.messageList').appendChild(messageItem)
   }
 
+  /**
+   *
+   *
+   * @param {*} e
+   * @memberof ChatApplication
+   */
   receiveMessage (e) {
     const receivedData = JSON.parse(e.data)
     if ((receivedData.type === 'message' && receivedData.channel === this._channel) || receivedData.type === 'notification') {
@@ -333,10 +400,21 @@ export default class ChatApplication extends window.HTMLElement {
     console.log('Msg from server: ' + e.data)
   }
 
+  /**
+   *
+   *
+   * @param {*} data
+   * @memberof ChatApplication
+   */
   sendMessage (data) {
     this._websocket.send(JSON.stringify(data))
   }
 
+  /**
+   *
+   *
+   * @memberof ChatApplication
+   */
   initializeChat () {
     const msg = {
       username: 'Chatterize',
@@ -358,6 +436,12 @@ export default class ChatApplication extends window.HTMLElement {
     }
   }
 
+  /**
+   *
+   *
+   * @param {*} e
+   * @memberof ChatApplication
+   */
   connectedMessage (e) {
     const msg = {
       username: 'Chatterize',
@@ -367,6 +451,11 @@ export default class ChatApplication extends window.HTMLElement {
     this.displayMessage(msg)
   }
 
+  /**
+   *
+   *
+   * @memberof ChatApplication
+   */
   displaySettings () {
     this.shadowRoot.getElementById('msgInput').style.display = 'none'
     this.shadowRoot.getElementById('send').style.display = 'none'
@@ -376,6 +465,12 @@ export default class ChatApplication extends window.HTMLElement {
     this.shadowRoot.getElementById('channel').style.display = 'block'
   }
 
+  /**
+   *
+   *
+   * @param {*} channel
+   * @memberof ChatApplication
+   */
   displayMessageInput (channel) {
     this.shadowRoot.getElementById('msgInput').style.display = 'block'
     this.shadowRoot.getElementById('send').style.display = 'block'
@@ -385,6 +480,11 @@ export default class ChatApplication extends window.HTMLElement {
     this.shadowRoot.getElementById('channel').style.display = 'none'
   }
 
+  /**
+   *
+   *
+   * @memberof ChatApplication
+   */
   displayChannelPicker () {
     this.shadowRoot.getElementById('msgInput').style.display = 'none'
     this.shadowRoot.getElementById('send').style.display = 'none'
@@ -394,12 +494,24 @@ export default class ChatApplication extends window.HTMLElement {
     this.shadowRoot.getElementById('channel').style.display = 'block'
   }
 
+  /**
+   *
+   *
+   * @returns
+   * @memberof ChatApplication
+   */
   checkActiveUser () {
     const user = window.localStorage.getItem('username')
     console.log(window.localStorage.getItem('username'))
     return user && user !== '' && this._username && this._username !== ''
   }
 
+  /**
+   *
+   *
+   * @param {*} e
+   * @memberof ChatApplication
+   */
   saveSettings (e) {
     const username = this.shadowRoot.getElementById('username').value.trim()
     const channel = this.shadowRoot.getElementById('channel').value.trim()
