@@ -6,22 +6,19 @@ template.innerHTML = `
 div.windowContainer {
     width: 500px;
     height: 500px;
-    /*background: rgba(128, 128, 128, 0.5);*/
     border-radius: 7px 7px 0px 0px;
     position: absolute;
     top: 0px;
     left: 0px;
     z-index: 1;
     border: 1px solid #adadad;
-
-    /*transition: top .5s 0s cubic-bezier(.1, 1.2, .3, 1), left .5s, width .5s .5s cubic-bezier(.1, 1.2, .3, 1), opacity .3s, visibility .5s;*/
 }
+
 div.windowContainer .maximized {
 
 }
 
 div.windowContainer.minimized {
-  /*top: 100%;*/
   left: 0;
   visibility: hidden;
   transition: top .5s 0s cubic-bezier(.1, 1.2, .3, 1), transform .5s 0s cubic-bezier(.1, 1.2, .3, 1), width .5s .5s cubic-bezier(.1, 1.2, .3, 1), opacity .3s;
@@ -69,7 +66,6 @@ div.content {
   width: 100%;
   height: calc(100% - 30px);
   background: rgba(128, 128, 128, 0.5);
-  /*border-radius: 0px 0px 7px 7px;*/
 }
 
 span.applicationName {
@@ -135,19 +131,9 @@ button:active {
     </div>
 </div>
 `
-/*
-let windowID = 0
-let zIndex = 1
-let active = false
-let initialY
-let initialX
-let currentY
-let currentX
-let yOffset = 0
-let xOffset = 0 */
 
 /**
- *
+ * Webcomponent module for the WindowContainer
  *
  * @export
  * @class WindowContainer
@@ -162,8 +148,7 @@ export default class WindowContainer extends window.HTMLElement {
     super()
     this.attachShadow({ mode: 'open' })
     this.shadowRoot.appendChild(template.content.cloneNode(true))
-    /* console.log(windowID) */
-    /* this.shadowRoot.addEventListener('click', () => this.dragStart(), false) */
+
     this._zIndex = 1
     this._active = false
     this._initialY = 0
@@ -190,7 +175,8 @@ export default class WindowContainer extends window.HTMLElement {
   }
 
   /**
-   *
+   * Connected callback, called when element is created
+   * Adding event listeners, tabindex etc
    *
    * @memberof WindowContainer
    */
@@ -198,14 +184,14 @@ export default class WindowContainer extends window.HTMLElement {
     // Make focusable
     this.tabIndex = 1
     this.setAttribute('tabindex', 1)
-    console.log('connected window')
 
     // Subscribe to event listeners
     this.subscribeListeners()
   }
 
   /**
-   *
+   * Disconnected callback, called when element is destroyed
+   * Removing event listeners etc
    *
    * @memberof WindowContainer
    */
@@ -215,7 +201,8 @@ export default class WindowContainer extends window.HTMLElement {
   }
 
   /**
-   *
+   * Attribute changed callback, called when attribute is changed
+   * Updating the window
    *
    * @param {*} name
    * @param {*} oldValue
@@ -226,18 +213,18 @@ export default class WindowContainer extends window.HTMLElement {
     this.updateApp()
   }
 
+  // The observed attributes that trigger the attribute changed callback
   static get observedAttributes () { return ['id', 'icon', 'fullname', 'appname'] }
 
   /**
-   *
+   * Set the id of the window
    *
    * @memberof WindowContainer
    */
   set id (id) {
     this._windowID = id
-    /* .log('TESTID' + this.shadowRoot.querySelector('div.window').id) */
+
     this.shadowRoot.querySelector('div.windowContainer').id = this._windowID
-    /* console.log(windowID) */
 
     this._closeEvent = new window.CustomEvent('closeEvent', {
       bubbles: true,
@@ -247,7 +234,7 @@ export default class WindowContainer extends window.HTMLElement {
   }
 
   /**
-   *
+   * Get the id of the window
    *
    * @memberof WindowContainer
    */
@@ -256,7 +243,7 @@ export default class WindowContainer extends window.HTMLElement {
   }
 
   /**
-   *
+   * Set the zindex of the window
    *
    * @memberof WindowContainer
    */
@@ -266,7 +253,7 @@ export default class WindowContainer extends window.HTMLElement {
   }
 
   /**
-   *
+   * Get the zindex of the window
    *
    * @memberof WindowContainer
    */
@@ -275,7 +262,7 @@ export default class WindowContainer extends window.HTMLElement {
   }
 
   /**
-   *
+   * Get the app name
    *
    * @readonly
    * @memberof WindowContainer
@@ -285,7 +272,7 @@ export default class WindowContainer extends window.HTMLElement {
   }
 
   /**
-   *
+   * Get the full name
    *
    * @readonly
    * @memberof WindowContainer
@@ -295,7 +282,7 @@ export default class WindowContainer extends window.HTMLElement {
   }
 
   /**
-   *
+   * Check if window is maximized
    *
    * @readonly
    * @memberof WindowContainer
@@ -305,7 +292,7 @@ export default class WindowContainer extends window.HTMLElement {
   }
 
   /**
-   *
+   * Update the window
    *
    * @memberof WindowContainer
    */
@@ -314,11 +301,11 @@ export default class WindowContainer extends window.HTMLElement {
     this._icon = this.getAttribute('icon')
     this._fullname = this.getAttribute('fullname')
     this._appname = this.getAttribute('appname')
-    console.log()
+
     this.shadowRoot.querySelector('.applicationIcon').setAttribute('src', this._icon)
     this.shadowRoot.querySelector('.applicationName').innerHTML = this._fullname
     const app = document.createElement(this._appname)
-    /* app.setAttribute('windowID', this.id) */
+
     this.shadowRoot.querySelector('div.content').appendChild(app)
     this._closeEvent = new window.CustomEvent('closeEvent', {
       bubbles: true,
@@ -328,9 +315,9 @@ export default class WindowContainer extends window.HTMLElement {
   }
 
   /**
+   * Update the title of the window
    *
-   *
-   * @param {*} e
+   * @param {Event} e the event
    * @memberof WindowContainer
    */
   updateTitle (e) {
@@ -340,21 +327,14 @@ export default class WindowContainer extends window.HTMLElement {
   }
 
   /**
+   * Make the window opening position jump for nice overlap
    *
-   *
-   * @param {*} step
-   * @param {*} row
+   * @param {int} step the y axis
+   * @param {int} row the x axis
    * @memberof WindowContainer
    */
   jump (step, row) {
     const desktopWindow = this.shadowRoot.querySelector('div.windowContainer')
-    // const desktopWindowStyles = window.getComputedStyle(desktopWindow, null)
-    // desktopWindow.style.top = '10px'
-    // desktopWindow.style.left = '10px'
-    // const topMargin = desktopWindow.style.top
-    // const leftMargin = desktopWindow.style.left
-    // console.log(topMargin + ' - ' + leftMargin)
-    // console.log(this.shadowRoot.querySelector('div.windowContainer').id)
 
     if (parseInt(step) <= 20) {
       const yPos = `${(step * 10)}px`
@@ -367,28 +347,21 @@ export default class WindowContainer extends window.HTMLElement {
       this._yOffset = (step * 10)
 
       desktopWindow.style.transform = 'translate3d(' + xPos + ', ' + yPos + ', 0)'
-      // console.log(`${parseInt(topMargin) + (step * 10)}px`)
-
-      // console.log('IFIFIFIF')
     }
-    // console.log(desktopWindow.style.top)
   }
 
   /**
-   *
+   * Focus the window
    *
    * @memberof WindowContainer
    */
   focusWindow () {
-    /* document.body.querySelector('window-handler').shadowRoot.querySelector('div.window').style.background = 'rgba(178, 178, 178, 0.5)' */
     this.shadowRoot.querySelector('div.windowContainer').style.background = 'rgba(128, 128, 128, 0.9)'
     this.zIndex = 999
-    console.log('Z: ' + this.shadowRoot.querySelector('div.windowContainer').zIndex)
-    console.log(this.zIndex)
   }
 
   /**
-   *
+   * Unfocus the window
    *
    * @memberof WindowContainer
    */
@@ -399,41 +372,34 @@ export default class WindowContainer extends window.HTMLElement {
     } else {
       this.zIndex = 2
     }
-
-    console.log(this.zIndex)
   }
 
   /**
+   * Window dragstart event
    *
-   *
-   * @param {*} e
+   * @param {Event} e the event
    * @memberof WindowContainer
    */
   dragStart (e) {
-    console.log(this._maximized)
     if (!this._maximized) {
       this.shadowRoot.querySelector('div.topbar').style.cursor = 'grabbing'
       this._active = true
-      /* console.log(e) */
       e = e || window.event
-      /* e.preventDefault() */
-      console.log('VÄRSTA DRAGET UNTZ UNTZ')
       this._initialX = e.clientX - this._xOffset
       this._initialY = e.clientY - this._yOffset
-      console.log(this._initialX + '-' + this._initialY)
     }
   }
 
   /**
+   * Window drag event
    *
-   *
-   * @param {*} e
+   * @param {Event} e the event
    * @memberof WindowContainer
    */
   drag (e) {
     if (this._active && !this._maximized) {
       e = e || window.event
-      /* e.preventDefault() */
+
       this._currentY = e.clientY - this._initialY
       this._currentX = e.clientX - this._initialX
 
@@ -444,49 +410,38 @@ export default class WindowContainer extends window.HTMLElement {
       const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0)
 
       if (e.clientY <= 0 || e.clientY >= vh || e.clientX <= 0 || e.clientX >= vw + 10) {
-        // this.dragStop(e)
         this._yOffset = 0
         this._xOffset = 0
       }
 
       this.move(this._currentX, this._currentY)
-
-      console.log(e.clientX + '-' + e.clientY)
     }
   }
 
   /**
+   * Window drag stop event
    *
-   *
-   * @param {*} e
+   * @param {Event} e the event
    * @memberof WindowContainer
    */
   dragStop (e) {
     if (!this._maximized) {
       this.shadowRoot.querySelector('div.topbar').style.cursor = 'auto'
-      console.log('DRAGET ÄR ÖVER')
       this._active = false
       this._initialY = this._currentY
       this._initialX = this._currentX
-      // this._yOffset = this._currentY
-      // this._xOffset = this._currentX
     }
   }
 
   /**
+   * Move the window
    *
-   *
-   * @param {*} xPos
-   * @param {*} yPos
+   * @param {int} xPos the x axis position
+   * @param {int} yPos the y axis position
    * @memberof WindowContainer
    */
   move (xPos, yPos) {
-    console.log('MOVEIT MOVEIT')
-    /* const desktopWindow = this.shadowRoot.querySelector('div.window') */
     const desktopWindow = this.shadowRoot.querySelector('div.windowContainer')
-    // console.log(desktopWindow.style.top)
-    /* desktopWindow.style.top = yPos + 'px'
-    desktopWindow.style.left = xPos + 'px' */
 
     const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
     const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0)
@@ -495,29 +450,18 @@ export default class WindowContainer extends window.HTMLElement {
     const boundaryBottom = vh - 80
     const boundaryRight = vw - (this._restoreWidth / 2)
     const boundaryLeft = 0 - this._restoreWidth / 2
-    /*
-    if (yPos > boundaryBottom) {
-      console.log('hejhejhej')
-      desktopWindow.style.transform = 'translate3d(' + xPos + 'px, ' + boundaryBottom + 'px, 0)'
-    } else if (xPos < boundaryLeft) {
-      desktopWindow.style.transform = 'translate3d(' + boundaryLeft + 'px, ' + yPos + 'px, 0)'
-    } else if (xPos > boundaryRight) {
-      desktopWindow.style.transform = 'translate3d(' + boundaryRight + 'px, ' + yPos + 'px, 0)'
-    } else if {} */
 
     if (yPos > boundaryTop && yPos <= boundaryBottom && xPos >= boundaryLeft && xPos <= boundaryRight) {
       desktopWindow.style.transform = 'translate3d(' + xPos + 'px, ' + yPos + 'px, 0)'
     } else {
       // this.dragStop()
     }
-
-    /* desktopWindow.style.transform = 'translate3d(' + xPos + 'px, ' + yPos + 'px, 0)' */
   }
 
   /**
+   * Close the window, and dispatch close event
    *
-   *
-   * @param {*} e
+   * @param {Event} e the event
    * @memberof WindowContainer
    */
   closeWindow (e) {
@@ -526,9 +470,9 @@ export default class WindowContainer extends window.HTMLElement {
   }
 
   /**
+   * Toggle for window maximized
    *
-   *
-   * @param {*} e
+   * @param {Event} e the event
    * @memberof WindowContainer
    */
   maximizeWindowToggle (e) {
@@ -536,8 +480,6 @@ export default class WindowContainer extends window.HTMLElement {
       const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0)
       const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0)
 
-      // this.shadowRoot.querySelector('div.windowContainer').style.left = 0
-      // this.shadowRoot.querySelector('div.windowContainer').style.top = 0
       this.shadowRoot.querySelector('div.windowContainer').style.transform = 'translate3d(' + 0 + 'px, ' + 0 + 'px, 0)'
       this.shadowRoot.querySelector('div.windowContainer').style.borderRadius = 0
       this.shadowRoot.querySelector('div.windowContainer').style.border = 0
@@ -546,10 +488,6 @@ export default class WindowContainer extends window.HTMLElement {
       this.shadowRoot.querySelector('div.windowContainer').style.height = (vh - 50) + 'px'
       this.shadowRoot.querySelector('div.windowContainer').style.width = vw + 'px'
 
-      // this._initialY = 0
-      // this._initialX = 0
-      // this._yOffset = 0
-      // this._xOffset = 0
       this._maximized = true
       this.zIndex = 999
     } else {
@@ -560,26 +498,23 @@ export default class WindowContainer extends window.HTMLElement {
       this.shadowRoot.querySelector('div.windowContainer').style.width = this._restoreWidth + 'px'
       this.shadowRoot.querySelector('div.windowContainer').style.transform = 'translate3d(' + this._initialX + 'px, ' + this._initialY + 'px, 0)'
       this._maximized = false
-      // this.zIndex = 1
     }
   }
 
   /**
+   * Minimize the window
    *
-   *
-   * @param {*} e
+   * @param {Event} e the event
    * @memberof WindowContainer
    */
   minimizeWindow (e) {
-    /* const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0) */
     const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0)
-    console.log('MINI')
     this.shadowRoot.querySelector('div.windowContainer').classList.add('minimized')
     this.shadowRoot.querySelector('div.windowContainer').style.transform = 'translate3d(' + 0 + 'px, ' + vh + 'px, 0)'
   }
 
   /**
-   *
+   * Restore the window from minimized
    *
    * @memberof WindowContainer
    */
@@ -590,7 +525,7 @@ export default class WindowContainer extends window.HTMLElement {
   }
 
   /**
-   *
+   * Add event listeners
    *
    * @memberof WindowContainer
    */
@@ -598,14 +533,6 @@ export default class WindowContainer extends window.HTMLElement {
     // Add eventlisteners for focus
     this.addEventListener('focus', () => this.focusWindow(), false)
     this.addEventListener('blur', () => this.unFocusWindow(), false)
-
-    /* document.addEventListener('click', (e) => {
-      if (e.detail.id !== this.getAttribute('id')) {
-        console.log('HEJ FÖR FAAAN')
-        console.log(e)
-        this.unFocusWindow()
-      }
-    }) */
 
     // Add eventlisteners for drag
     this.shadowRoot.querySelector('div.applicationHeader').addEventListener('mousedown', (e) => this.dragStart(e), false)
@@ -617,11 +544,12 @@ export default class WindowContainer extends window.HTMLElement {
     this.shadowRoot.getElementById('maxButton').addEventListener('click', (e) => this.maximizeWindowToggle(e), false)
     this.shadowRoot.getElementById('minButton').addEventListener('click', (e) => this.minimizeWindow(e), false)
 
+    // Add eventlistener for title update
     this.shadowRoot.addEventListener('titleUpdate', (e) => this.updateTitle(e))
   }
 
   /**
-   *
+   * Remove event listeners
    *
    * @memberof WindowContainer
    */
@@ -640,6 +568,7 @@ export default class WindowContainer extends window.HTMLElement {
     this.shadowRoot.getElementById('maxButton').removeEventListener('click', (e) => this.maximizeWindowToggle(e), false)
     this.shadowRoot.getElementById('minButton').removeEventListener('click', (e) => this.minimizeWindow(e), false)
 
+    // Remove eventlistener for title update
     this.shadowRoot.removeEventListener('titleUpdate', (e) => this.updateTitle(e))
   }
 }
