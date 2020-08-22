@@ -19,7 +19,7 @@ div#menu {
 `
 
 /**
- *
+ * Webcomponent module for the desktop menu
  *
  * @export
  * @class DesktopMenu

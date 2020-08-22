@@ -53,7 +53,6 @@ ul.contextList li {
 let windowID = 0
 let jumps = 0
 let row = 0
-// let zIndex = 1
 
 /**
  *
@@ -71,14 +70,15 @@ export default class Desktop extends window.HTMLElement {
     super()
     this.attachShadow({ mode: 'open' })
     this.shadowRoot.appendChild(template.content.cloneNode(true))
-    /* this.shadowRoot.querySelector('h1').innerText = this.getAttribute('name') */
+
     this._chatAppSet = new window.Set()
     this._memoryAppSet = new window.Set()
     this._weatherAppSet = new window.Set()
   }
 
   /**
-   *
+   * Connected callback, called when element is created
+   * Adding event listeners etc
    *
    * @memberof Desktop
    */
@@ -92,7 +92,8 @@ export default class Desktop extends window.HTMLElement {
   }
 
   /**
-   *
+   * Disconnected callback, called when element is destroyed
+   * Removing event listeners etc
    *
    * @memberof Desktop
    */
@@ -106,9 +107,9 @@ export default class Desktop extends window.HTMLElement {
   }
 
   /**
+   * Add a new window
    *
-   *
-   * @param {*} e
+   * @param {Event} e the event
    * @memberof Desktop
    */
   addWindow (e) {
@@ -122,44 +123,38 @@ export default class Desktop extends window.HTMLElement {
       jumps = 0
       row++
     }
-    // zIndex++
+
     windowID++
     jumps++
+
     const appWindow = document.createElement('window-container')
-    // appWindow.id = windowID
-    // appWindow.icon = icon
-    // appWindow.appname = appname
-    // appWindow.fullname = fullname
 
     appWindow.setAttribute('id', windowID)
     appWindow.setAttribute('icon', icon)
     appWindow.setAttribute('fullname', fullname)
     appWindow.setAttribute('appname', appname)
-    // appWindow.zIndex = 999
+
     appWindow.jump(jumps, row)
     if (this.checkMaximized()) {
       appWindow.zIndex = 3
     }
-    // appWindow.move((row * 100), (jumps * 10))
-    this.shadowRoot.getElementById('canvas').appendChild(appWindow) /* .querySelector('div') */
+
+    this.shadowRoot.getElementById('canvas').appendChild(appWindow)
     appWindow.focus()
     e.stopPropagation()
     e.cancelBubble = true
 
     this.addToList(appWindow.appname, appWindow.id)
-    console.log(this._chatAppSet)
   }
 
   /**
+   * Add a window to list of open windows
    *
-   *
-   * @param {*} name
-   * @param {*} id
+   * @param {String} name the name of the application
+   * @param {int} id the id of the window
    * @memberof Desktop
    */
   addToList (name, id) {
-    console.log('ADD')
-    console.log(name)
     switch (name) {
       case 'chat-application':
         this._chatAppSet.add(id)
@@ -174,17 +169,15 @@ export default class Desktop extends window.HTMLElement {
   }
 
   /**
+   * Remove window from the list of open windows
    *
-   *
-   * @param {*} name
-   * @param {*} id
+   * @param {String} name the name of the application
+   * @param {int} id the id of the window
    * @memberof Desktop
    */
   removeFromList (name, id) {
-    console.log('SWITCH')
     switch (name) {
       case 'chat-application':
-        console.log('CASE')
         this._chatAppSet.delete(id)
         break
       case 'memory-application':
@@ -197,17 +190,15 @@ export default class Desktop extends window.HTMLElement {
   }
 
   /**
+   * Get the list of open windows for an application
    *
-   *
-   * @param {*} name
+   * @param {String} name the name of the application
    * @returns
    * @memberof Desktop
    */
   getList (name) {
-    console.log(name)
     switch (name) {
       case 'chat-application':
-        console.log('CASE')
         return this._chatAppSet
       case 'memory-application':
         return this._memoryAppSet
@@ -217,7 +208,7 @@ export default class Desktop extends window.HTMLElement {
   }
 
   /**
-   *
+   * Display the context menu of an application
    *
    * @param {*} e
    * @memberof Desktop
@@ -225,50 +216,41 @@ export default class Desktop extends window.HTMLElement {
   displayContextMenu (e) {
     e.stopPropagation()
     e.cancelBubble = true
-    console.log(e.target)
-    console.log(this.getList(e.detail.appname))
     e.target.showContext(e, this.getList(e.detail.appname))
   }
 
   /**
+   * Delete/remove/close a window
    *
-   *
-   * @param {*} e
+   * @param {Event} e the event
    * @memberof Desktop
    */
   deleteWindow (e) {
-    console.log('DElETE WINDOW' + e.detail.name)
     e.stopPropagation()
     e.cancelBubble = true
     this.removeFromList(e.detail.name, e.detail.id)
   }
 
-  minimizeWindow (e) {
-
-  }
-
   /**
+   * Restore a window from minimized
    *
-   *
-   * @param {*} e
+   * @param {Event} e the event
    * @memberof Desktop
    */
   restoreWindow (e) {
     e.stopPropagation()
     e.cancelBubble = true
     const windowID = e.detail.id
-    console.log(windowID)
     this.shadowRoot.getElementById(windowID).restoreWindow()
   }
 
   /**
+   * Close all windows of an application
    *
-   *
-   * @param {*} e
+   * @param {Event} e the event
    * @memberof Desktop
    */
   closeAll (e) {
-    console.log(e)
     e.stopPropagation()
     e.cancelBubble = true
     const name = e.detail.appname
@@ -280,9 +262,9 @@ export default class Desktop extends window.HTMLElement {
   }
 
   /**
+   * Minimize all windows of an application
    *
-   *
-   * @param {*} e
+   * @param {Event} e the event
    * @memberof Desktop
    */
   minimizeAll (e) {
@@ -296,19 +278,7 @@ export default class Desktop extends window.HTMLElement {
   }
 
   /**
-   *
-   *
-   * @param {*} windowID
-   * @memberof Desktop
-   */
-  updateWindowTitle (windowID) {
-    console.log(windowID)
-    console.log(document.getElementById(windowID))
-    document.getElementById(windowID).updateTitle('test')
-  }
-
-  /**
-   *
+   * Helper method for setting proper overlap of windows, if any window is maximized
    *
    * @memberof Desktop
    */
@@ -323,15 +293,14 @@ export default class Desktop extends window.HTMLElement {
   }
 
   /**
+   * Check if any window is maximized
    *
-   *
-   * @returns
+   * @returns true if maximized, false otherwise
    * @memberof Desktop
    */
   checkMaximized () {
     if (this.shadowRoot.getElementById('canvas').hasChildNodes()) {
       for (let i = 0; i < this.shadowRoot.getElementById('canvas').children.length; i++) {
-        // console.log(this.shadowRoot.getElementById('canvas').children[i].isMaximized)
         if (this.shadowRoot.getElementById('canvas').children[i].isMaximized) {
           return true
         }
