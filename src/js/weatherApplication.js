@@ -342,7 +342,7 @@ input[type=text]:active {
 `
 
 /**
- *
+ * Webcomponent module for the weather application
  *
  * @export
  * @class WeatherApplication
@@ -358,16 +358,17 @@ export default class WeatherApplication extends window.HTMLElement {
     this.attachShadow({ mode: 'open' })
     this.shadowRoot.appendChild(template.content.cloneNode(true))
 
+    // Get the last searched city from localstorage. If none, default to Malmö
     this._lastSearch = window.localStorage.getItem('weathercity') || 'Malmö'
   }
 
   /**
-   *
+   * Connected callback, called when element is created
+   * Adding event listeners
    *
    * @memberof WeatherApplication
    */
   connectedCallback () {
-    // this.testConnection()
     this.shadowRoot.getElementById('currentButton').classList.add('active')
 
     this.shadowRoot.getElementById('search').addEventListener('keypress', (e) => this.search(e))
@@ -378,7 +379,8 @@ export default class WeatherApplication extends window.HTMLElement {
   }
 
   /**
-   *
+   * Disconnected callback, called when element is destroyed
+   * Removing event listeners
    *
    * @memberof WeatherApplication
    */
@@ -389,7 +391,7 @@ export default class WeatherApplication extends window.HTMLElement {
   }
 
   /**
-   *
+   * Initialize the weather application
    *
    * @memberof WeatherApplication
    */
@@ -400,11 +402,11 @@ export default class WeatherApplication extends window.HTMLElement {
   }
 
   /**
+   * Get and display the current weather, and return latitude and longitude for the location
    *
-   *
-   * @param {*} city
-   * @param {*} countrycode
-   * @returns
+   * @param {String} city the city
+   * @param {String} countrycode the countrycode
+   * @returns {Object} object containing lat, lon values
    * @memberof WeatherApplication
    */
   async getCurrentWeather (city, countrycode) {
@@ -434,8 +436,6 @@ export default class WeatherApplication extends window.HTMLElement {
 
     this.shadowRoot.getElementById('currentSunset').innerHTML = this.getSunset(data)
 
-    console.log(data.coord.lat, data.coord.lon)
-
     return { lat: data.coord.lat, lon: data.coord.lon }
   }
 
@@ -444,18 +444,15 @@ export default class WeatherApplication extends window.HTMLElement {
   }
 
   /**
+   * Get and display the weather forecast
    *
-   *
-   * @param {*} lat
-   * @param {*} lon
+   * @param {int} lat the latitude
+   * @param {int} lon the longitude
    * @memberof WeatherApplication
    */
   async getWeatherForecast (lat, lon) {
-    console.log(lat, lon)
     const response = await window.fetch('https://api.openweathermap.org/data/2.5/onecall?lat=' + lat + '&lon=' + lon + '&exclude={current,minutely,hourly}&units=metric&appid=d7b1a89f9f2a034e861e9664548a6a92')
     const data = await response.json()
-    // console.log(day)
-    console.log(data.daily)
 
     let firstItem = true
 
@@ -486,7 +483,6 @@ export default class WeatherApplication extends window.HTMLElement {
 
       dayDiv.appendChild(dayHeader)
       if (firstItem) {
-        console.log('today')
         firstItem = false
 
         const today = document.createElement('div')
@@ -533,10 +529,6 @@ export default class WeatherApplication extends window.HTMLElement {
 
       this.shadowRoot.querySelector('.forecastList').appendChild(listItem)
     })
-
-    /* const response = await window.fetch('http://api.openweathermap.org/data/2.5/forecast?q=' + city + ',' + countrycode + '&units=metric&appid=d7b1a89f9f2a034e861e9664548a6a92')
-    const data = await response.json()
-    console.log(data) */
   }
 
   async getHourlyForecast (city, countrycode) {}
@@ -544,15 +536,13 @@ export default class WeatherApplication extends window.HTMLElement {
   async getDailyForecast (city, countrycode) {}
 
   /**
-   *
+   * Test method, testing connection, displaying etc
    *
    * @memberof WeatherApplication
    */
   async testConnection () {
     const response = await window.fetch('http://api.openweathermap.org/data/2.5/weather?q=Malmö,se&units=metric&appid=d7b1a89f9f2a034e861e9664548a6a92')
     const data = await response.json()
-
-    // this.getMainInfo(data)
 
     this.shadowRoot.getElementById('search').value = data.name
 
@@ -581,22 +571,21 @@ export default class WeatherApplication extends window.HTMLElement {
   }
 
   /**
+   * Get the main weather info
    *
-   *
-   * @param {*} data
+   * @param {Object} data the weather data
    * @memberof WeatherApplication
    */
   getMainInfo (data) {
-    // this.shadowRoot.querySelector('.weatherHeadline').innerText = data.name
     this.getWeatherIcon(data)
     this.getWeatherDescription(data)
   }
 
   /**
+   * Get the weather icon
    *
-   *
-   * @param {*} data
-   * @returns
+   * @param {Object} data the weather data
+   * @returns {String} the icon url
    * @memberof WeatherApplication
    */
   getWeatherIcon (data) {
@@ -606,10 +595,10 @@ export default class WeatherApplication extends window.HTMLElement {
   }
 
   /**
+   * Get weather description
    *
-   *
-   * @param {*} data
-   * @returns
+   * @param {Object} data the weather object
+   * @returns {String} the description
    * @memberof WeatherApplication
    */
   getWeatherDescription (data) {
@@ -620,10 +609,10 @@ export default class WeatherApplication extends window.HTMLElement {
   }
 
   /**
+   * Get the temperature
    *
-   *
-   * @param {*} data
-   * @returns
+   * @param {Object} data the weather object
+   * @returns {String} the temperature
    * @memberof WeatherApplication
    */
   getTemp (data) {
@@ -633,10 +622,10 @@ export default class WeatherApplication extends window.HTMLElement {
   }
 
   /**
+   * Get the wind
    *
-   *
-   * @param {*} data
-   * @returns
+   * @param {Object} data the weather data
+   * @returns {String} the wind
    * @memberof WeatherApplication
    */
   getWind (data) {
@@ -646,10 +635,10 @@ export default class WeatherApplication extends window.HTMLElement {
   }
 
   /**
+   * Get the cloudiness name
    *
-   *
-   * @param {*} data
-   * @returns
+   * @param {Object} data the weather data
+   * @returns {String} the cloudiness
    * @memberof WeatherApplication
    */
   getCloudiness (data) {
@@ -671,10 +660,10 @@ export default class WeatherApplication extends window.HTMLElement {
   }
 
   /**
+   * Get the pressure
    *
-   *
-   * @param {*} data
-   * @returns
+   * @param {Object} data the weather data
+   * @returns {String} the pressure
    * @memberof WeatherApplication
    */
   getPressure (data) {
@@ -684,10 +673,10 @@ export default class WeatherApplication extends window.HTMLElement {
   }
 
   /**
+   * Get the humidity
    *
-   *
-   * @param {*} data
-   * @returns
+   * @param {Object} data the weather data
+   * @returns {String} the humidity
    * @memberof WeatherApplication
    */
   getHumidity (data) {
@@ -697,15 +686,14 @@ export default class WeatherApplication extends window.HTMLElement {
   }
 
   /**
+   * Get the precipitation
    *
-   *
-   * @param {*} data
-   * @returns
+   * @param {Object} data the weather data
+   * @returns {String} the precipitation
    * @memberof WeatherApplication
    */
   getPrecipitation (data) {
     let precipitationValue = '0'
-    console.log(data)
     if (data.rain) {
       precipitationValue = data.rain['1h']
     } else if (data.snow) {
@@ -718,10 +706,10 @@ export default class WeatherApplication extends window.HTMLElement {
   }
 
   /**
+   * Get the sunrise time
    *
-   *
-   * @param {*} data
-   * @returns
+   * @param {Object} data the weather data
+   * @returns {String} the sunrise time
    * @memberof WeatherApplication
    */
   getSunrise (data) {
@@ -740,10 +728,10 @@ export default class WeatherApplication extends window.HTMLElement {
   }
 
   /**
+   * Get the sunset time
    *
-   *
-   * @param {*} data
-   * @returns
+   * @param {Object} data the weather data
+   * @returns {String} the sunset time
    * @memberof WeatherApplication
    */
   getSunset (data) {
@@ -763,10 +751,10 @@ export default class WeatherApplication extends window.HTMLElement {
   }
 
   /**
+   * Get the name of the wind from the speed
    *
-   *
-   * @param {*} speed
-   * @returns
+   * @param {int} speed the wind speed
+   * @returns {String} the wind name
    * @memberof WeatherApplication
    */
   getWindName (speed) {
@@ -802,10 +790,10 @@ export default class WeatherApplication extends window.HTMLElement {
   }
 
   /**
+   * Get wind direction string from degrees
    *
-   *
-   * @param {*} degrees
-   * @returns
+   * @param {int} degrees the wind direction
+   * @returns {String} the wind direction string
    * @memberof WeatherApplication
    */
   getWindDirection (degrees) {
@@ -815,15 +803,14 @@ export default class WeatherApplication extends window.HTMLElement {
   }
 
   /**
+   * Search location
    *
-   *
-   * @param {*} e
+   * @param {Event} e the event
    * @memberof WeatherApplication
    */
   async search (e) {
     if (e.key === 'Enter' && this.shadowRoot.getElementById('search').value.trim() !== '') {
       const latlon = await this.getCurrentWeather(this.shadowRoot.getElementById('search').value.trim(), 'SE')
-      console.log('coord', latlon)
       this.getWeatherForecast(latlon.lat, latlon.lon)
 
       this._lastSearch = this.shadowRoot.getElementById('search').value.trim()
@@ -832,9 +819,9 @@ export default class WeatherApplication extends window.HTMLElement {
   }
 
   /**
+   * Show current weather
    *
-   *
-   * @param {*} e
+   * @param {Event} e the event
    * @memberof WeatherApplication
    */
   showCurrentWeather (e) {
@@ -845,9 +832,9 @@ export default class WeatherApplication extends window.HTMLElement {
   }
 
   /**
+   * Show weather forecast
    *
-   *
-   * @param {*} e
+   * @param {Event} e the event
    * @memberof WeatherApplication
    */
   showForecastWeather (e) {
@@ -858,12 +845,12 @@ export default class WeatherApplication extends window.HTMLElement {
   }
 
   /**
+   * Get date string
    *
-   *
-   * @param {*} weekday
-   * @param {*} date
-   * @param {*} month
-   * @returns
+   * @param {int} weekday the day number
+   * @param {int} date the date
+   * @param {int} month the month number
+   * @returns {String} the formatted date string
    * @memberof WeatherApplication
    */
   getFormattedDate (weekday, date, month) {
@@ -873,10 +860,10 @@ export default class WeatherApplication extends window.HTMLElement {
   }
 
   /**
+   * Get the day string from day number
    *
-   *
-   * @param {*} dayNbr
-   * @returns
+   * @param {int} dayNbr the day number
+   * @returns {String} the day string
    * @memberof WeatherApplication
    */
   getDayString (dayNbr) {
@@ -908,10 +895,10 @@ export default class WeatherApplication extends window.HTMLElement {
   }
 
   /**
+   * Get month string from month number
    *
-   *
-   * @param {*} monthNbr
-   * @returns
+   * @param {int} monthNbr the month number
+   * @returns {String} the month string
    * @memberof WeatherApplication
    */
   getMonthString (monthNbr) {

@@ -233,16 +233,16 @@ export default class ChatApplication extends window.HTMLElement {
   }
 
   /**
-   *
+   * Connected callback, called when element is created
+   * Adding event listeners
+   * Initializing chat
+   * Dispatch title update event
    *
    * @memberof ChatApplication
    */
   connectedCallback () {
     this.subscribeListeners()
-    // this.testMessage()
     this.initializeChat()
-    console.log(this.parentElement.parentElement.querySelector('.applicationTitle'))
-    console.log(this.checkActiveUser())
 
     if (!this._channel || this._channel !== '') {
       this.dispatchEvent(this._titleUpdate)
@@ -250,7 +250,9 @@ export default class ChatApplication extends window.HTMLElement {
   }
 
   /**
-   *
+   * Disconnected callback, called when element is destroyed
+   * Removing event listeners
+   * Closing websocket connection
    *
    * @memberof ChatApplication
    */
@@ -260,7 +262,7 @@ export default class ChatApplication extends window.HTMLElement {
   }
 
   /**
-   *
+   * Attribute changed callback, called when attribute is changed
    *
    * @param {*} name
    * @param {*} oldValue
@@ -271,10 +273,11 @@ export default class ChatApplication extends window.HTMLElement {
     this.updateApp()
   }
 
+  // The observed attributes
   static get observedAttributes () { return ['channel'] }
 
   /**
-   *
+   * Add event listeners
    *
    * @memberof ChatApplication
    */
@@ -287,13 +290,12 @@ export default class ChatApplication extends window.HTMLElement {
   }
 
   /**
-   *
+   * Remove event listeners
    *
    * @memberof ChatApplication
    */
   unsubscribeListeners () {
     this._websocket.removeEventListener('message', (e) => this.receiveMessage(e))
-    /* this._websocket.removeEventListener('open', (e) => this.connectedMessage(e)) */
     this.shadowRoot.getElementById('msgInput').removeEventListener('keypress', (e) => this.enterMessage(e))
     this.shadowRoot.getElementById('send').removeEventListener('click', (e) => this.enterMessage(e))
     this.shadowRoot.getElementById('settings').removeEventListener('click', (e) => this.toggleSettings(e))
@@ -301,16 +303,14 @@ export default class ChatApplication extends window.HTMLElement {
   }
 
   /**
+   * Get entered message and send it
    *
-   *
-   * @param {*} e
+   * @param {Event} e the event
    * @memberof ChatApplication
    */
   enterMessage (e) {
-    console.log(e)
     if (!e.shiftKey && (e.key === 'Enter' || e.button === 0) && this.shadowRoot.getElementById('msgInput').value.trim() !== '') {
       const msgText = this.shadowRoot.getElementById('msgInput').value.trim()
-      console.log(msgText)
       const message = {
         type: 'message',
         data: msgText,
@@ -325,7 +325,7 @@ export default class ChatApplication extends window.HTMLElement {
   }
 
   /**
-   *
+   * Toggle the settings menu
    *
    * @param {*} e
    * @memberof ChatApplication
@@ -346,7 +346,7 @@ export default class ChatApplication extends window.HTMLElement {
   }
 
   /**
-   *
+   * Display a test message
    *
    * @memberof ChatApplication
    */
@@ -362,9 +362,9 @@ export default class ChatApplication extends window.HTMLElement {
   }
 
   /**
+   * Display message
    *
-   *
-   * @param {*} data
+   * @param {Object} data the mesage data
    * @memberof ChatApplication
    */
   displayMessage (data) {
@@ -381,9 +381,9 @@ export default class ChatApplication extends window.HTMLElement {
   }
 
   /**
+   * Parse received message
    *
-   *
-   * @param {*} e
+   * @param {Event} e the event
    * @memberof ChatApplication
    */
   receiveMessage (e) {
@@ -396,14 +396,12 @@ export default class ChatApplication extends window.HTMLElement {
         this.connectedMessage()
       }
     }
-
-    console.log('Msg from server: ' + e.data)
   }
 
   /**
+   * Send a message to the server
    *
-   *
-   * @param {*} data
+   * @param {Object} data the message data
    * @memberof ChatApplication
    */
   sendMessage (data) {
@@ -411,7 +409,7 @@ export default class ChatApplication extends window.HTMLElement {
   }
 
   /**
-   *
+   * Initialize the chat app, displaying messages etc
    *
    * @memberof ChatApplication
    */
@@ -427,8 +425,10 @@ export default class ChatApplication extends window.HTMLElement {
     this.displayMessage(msg)
     this.displayMessage(msg2)
 
+    // If no active user, show settings for username / channel input
     if (!this.checkActiveUser()) {
       this.displaySettings()
+      // Otherwise show latest used channel with latest used username
     } else {
       this.displayMessageInput()
       this.shadowRoot.getElementById('username').value = this._username
@@ -437,9 +437,9 @@ export default class ChatApplication extends window.HTMLElement {
   }
 
   /**
+   * Display connect message
    *
-   *
-   * @param {*} e
+   * @param {Event} e the event
    * @memberof ChatApplication
    */
   connectedMessage (e) {
@@ -452,7 +452,7 @@ export default class ChatApplication extends window.HTMLElement {
   }
 
   /**
-   *
+   * Display the settings menu
    *
    * @memberof ChatApplication
    */
@@ -466,9 +466,9 @@ export default class ChatApplication extends window.HTMLElement {
   }
 
   /**
+   * Display the message input
    *
-   *
-   * @param {*} channel
+   * @param {String} channel the chat channel
    * @memberof ChatApplication
    */
   displayMessageInput (channel) {
@@ -481,7 +481,7 @@ export default class ChatApplication extends window.HTMLElement {
   }
 
   /**
-   *
+   * Display the channel picker
    *
    * @memberof ChatApplication
    */
@@ -495,9 +495,9 @@ export default class ChatApplication extends window.HTMLElement {
   }
 
   /**
+   * Check if there's an active user
    *
-   *
-   * @returns
+   * @returns boolean true if user exists, false otherwise
    * @memberof ChatApplication
    */
   checkActiveUser () {
@@ -507,9 +507,10 @@ export default class ChatApplication extends window.HTMLElement {
   }
 
   /**
+   * Save settings for the chat app
+   * Dispatches event for window title update
    *
-   *
-   * @param {*} e
+   * @param {Event} e the event
    * @memberof ChatApplication
    */
   saveSettings (e) {
