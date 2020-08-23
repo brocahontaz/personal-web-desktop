@@ -304,6 +304,8 @@ export default class WindowContainer extends window.HTMLElement {
 
     this.shadowRoot.querySelector('.applicationIcon').setAttribute('src', this._icon)
     this.shadowRoot.querySelector('.applicationName').innerHTML = this._fullname
+
+    // Create the web component for the app
     const app = document.createElement(this._appname)
 
     this.shadowRoot.querySelector('div.content').appendChild(app)
