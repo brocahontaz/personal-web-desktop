@@ -75,7 +75,7 @@ img.frontside {
 `
 
 /**
- *
+ * Webcomponent module for the memory brick element
  *
  * @export
  * @class MemoryBrick
@@ -103,13 +103,13 @@ export default class MemoryBrick extends window.HTMLElement {
   }
 
   /**
-   *
+   * Connected callback, called when element is created
+   * Make focusable, add event listeners
    *
    * @memberof MemoryBrick
    */
   connectedCallback () {
     this.tabIndex = 1
-    // this.setAttribute('tabindex', 1)
     this._img = this.getAttribute('img')
     this.shadowRoot.querySelector('.backside').setAttribute('src', '/image/' + this._backside)
     this.shadowRoot.querySelector('.frontside').setAttribute('src', '/image/' + this._img)
@@ -121,7 +121,8 @@ export default class MemoryBrick extends window.HTMLElement {
   }
 
   /**
-   *
+   * Disconnected callback, called when element is destroyed
+   * Removing event listeners
    *
    * @memberof MemoryBrick
    */
@@ -133,7 +134,7 @@ export default class MemoryBrick extends window.HTMLElement {
   }
 
   /**
-   *
+   * Attribute changed callback, called when attribute changed
    *
    * @param {*} name
    * @param {*} oldValue
@@ -146,10 +147,11 @@ export default class MemoryBrick extends window.HTMLElement {
     }
   }
 
+  // Observed attribute
   static get observedAttributes () { return ['img'] }
 
   /**
-   *
+   * Update the brick
    *
    * @memberof MemoryBrick
    */
@@ -158,9 +160,9 @@ export default class MemoryBrick extends window.HTMLElement {
   }
 
   /**
+   * Focus the brick
    *
-   *
-   * @param {*} e
+   * @param {Event} e the event
    * @memberof MemoryBrick
    */
   focusBrick (e) {
@@ -168,9 +170,9 @@ export default class MemoryBrick extends window.HTMLElement {
   }
 
   /**
+   * Unfocus the brick
    *
-   *
-   * @param {*} e
+   * @param {Event} e the event
    * @memberof MemoryBrick
    */
   unFocusBrick (e) {
@@ -178,7 +180,7 @@ export default class MemoryBrick extends window.HTMLElement {
   }
 
   /**
-   *
+   * Get brick image
    *
    * @readonly
    * @memberof MemoryBrick
@@ -188,7 +190,7 @@ export default class MemoryBrick extends window.HTMLElement {
   }
 
   /**
-   *
+   * Get brick focus
    *
    * @memberof MemoryBrick
    */
@@ -197,7 +199,7 @@ export default class MemoryBrick extends window.HTMLElement {
   }
 
   /**
-   *
+   * Set brick focus
    *
    * @memberof MemoryBrick
    */
@@ -206,7 +208,7 @@ export default class MemoryBrick extends window.HTMLElement {
   }
 
   /**
-   *
+   * Check if brick has been matched
    *
    * @readonly
    * @memberof MemoryBrick
@@ -216,25 +218,13 @@ export default class MemoryBrick extends window.HTMLElement {
   }
 
   /**
+   * Click brick event
+   * Dispatches click brick event
    *
-   *
-   * @param {*} e
-   * @memberof MemoryBrick
-   */
-  testSpace (e) {
-    console.log(e)
-  }
-
-  /**
-   *
-   *
-   * @param {*} e
+   * @param {Event} e the event
    * @memberof MemoryBrick
    */
   clickBrick (e) {
-    // this.blur()
-    // e.preventDefault()
-    // e.stopPropagation()
     if (e.keyCode === 32 || e.button === 0) {
       this._clickBrick = new window.CustomEvent('clickBrick', {
         bubbles: true,
@@ -242,15 +232,13 @@ export default class MemoryBrick extends window.HTMLElement {
         detail: { id: this.id, img: this._img, revealed: this._revealed, matched: this._matched }
       })
       this.dispatchEvent(this._clickBrick)
-    } else {
-
     }
   }
 
   /**
+   * Toggle if brick is visible
    *
-   *
-   * @param {*} e
+   * @param {Event} e the event
    * @memberof MemoryBrick
    */
   toggleView (e) {
@@ -258,33 +246,19 @@ export default class MemoryBrick extends window.HTMLElement {
       this._reveal = false
       this.shadowRoot.querySelector('.backside').style.display = 'block'
       this.shadowRoot.querySelector('.frontside').style.display = 'none'
-      /* this.shadowRoot.querySelector('.backside').style.visibility = 'visible'
-      this.shadowRoot.querySelector('.frontside').style.visibility = 'hidden' */
     } else if (!this._matched) {
       this._reveal = true
       this.shadowRoot.querySelector('.backside').style.display = 'none'
       this.shadowRoot.querySelector('.frontside').style.display = 'block'
-      /* this.shadowRoot.querySelector('.backside').style.visibility = 'hidden'
-      this.shadowRoot.querySelector('.frontside').style.visibility = 'visible' */
     }
-    /*
-    this._clickBrick = new window.CustomEvent('clickBrick', {
-      bubbles: true,
-      cancelable: true,
-      detail: { id: this.id, img: this._img, revealed: this._revealed }
-    })
-
-    this.dispatchEvent(this._clickBrick) */
   }
 
   /**
-   *
+   * Set matched to true
    *
    * @memberof MemoryBrick
    */
   match () {
-    // this.tabIndex = -1
-    // this.removeAttribute('tabindex')
     this._matched = true
     this.shadowRoot.querySelector('.backside').style.display = 'none'
     this.shadowRoot.querySelector('.frontside').style.display = 'none'

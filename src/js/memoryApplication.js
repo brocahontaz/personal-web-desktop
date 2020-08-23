@@ -223,7 +223,7 @@ ol {
 `
 
 /**
- *
+ * Webcomponent module for the memory application
  *
  * @export
  * @class MemoryApplication
@@ -255,18 +255,12 @@ export default class MemoryApplication extends window.HTMLElement {
   }
 
   /**
-   *
+   * Connected callback, called when element is created
+   * Adding event listeners
    *
    * @memberof MemoryApplication
    */
   connectedCallback () {
-    // this.populateArray(9)
-    // this.shuffleImages()
-    // this.displayMemoryGridNew()
-    console.log(this._imageArray)
-
-    // this.tabIndex = -1
-
     this.populateScores()
 
     this.shadowRoot.addEventListener('clickBrick', (e) => this.clickBrick(e))
@@ -281,7 +275,8 @@ export default class MemoryApplication extends window.HTMLElement {
   }
 
   /**
-   *
+   * Disconnected callback, called when element ins destroyed
+   * Removing event listeners
    *
    * @memberof MemoryApplication
    */
@@ -298,9 +293,9 @@ export default class MemoryApplication extends window.HTMLElement {
   }
 
   /**
+   * Move in the grid
    *
-   *
-   * @param {*} e
+   * @param {Event} e the event
    * @memberof MemoryApplication
    */
   move (e) {
@@ -313,9 +308,8 @@ export default class MemoryApplication extends window.HTMLElement {
     let left = -1
     let right = 1
 
-    // console.log(this._columns)
-    // console.log(this._rows * (this._columns - 1))
-
+    // Get correct next brick to move to depending on current position
+    // Cycling when at an endpoint
     if (currentId < this._columns) {
       up = (this._rows - 1) * (this._columns)
     }
@@ -332,33 +326,27 @@ export default class MemoryApplication extends window.HTMLElement {
       right = -currentId
     }
 
-    console.log(currentTarget)
-    // console.log(e)
+    // Move in the grid, with keys
     switch (e.code) {
       case 'KeyW':
-        console.log('UP')
-        console.log(currentId + up)
         this.shadowRoot.getElementById(currentId + up).focus()
         break
       case 'KeyS':
-        console.log('DOWN', parseInt(currentTarget.id) + down)
         this.shadowRoot.getElementById(currentId + down).focus()
         break
       case 'KeyA':
-        console.log('LEFT')
         this.shadowRoot.getElementById(currentId + left).focus()
         break
       case 'KeyD':
-        console.log('RIGHT')
         this.shadowRoot.getElementById(currentId + right).focus()
         break
     }
   }
 
   /**
+   * Start the game
    *
-   *
-   * @param {*} e
+   * @param {Event} e the event
    * @memberof MemoryApplication
    */
   startGame (e) {
@@ -366,8 +354,8 @@ export default class MemoryApplication extends window.HTMLElement {
     this._testInterval = setInterval(this.testTimer.bind(this), 1000)
     this._startTime = Date.now()
     const gridSizeChoice = this.shadowRoot.querySelector('input[name=gridSize]:checked').value
-    // let columns = 0
-    // let rows = 0
+
+    // Get proper img array, grid size, score multiplier, according to user choice
     switch (gridSizeChoice) {
       case '4by4':
         this.populateArray(9)
@@ -392,6 +380,7 @@ export default class MemoryApplication extends window.HTMLElement {
         break
     }
 
+    // Shuffle images and display brick grid
     this.shuffleImages()
     this.displayMemoryGridNew()
     this.shadowRoot.querySelector('.memoryMenu').style.display = 'none'
@@ -399,19 +388,17 @@ export default class MemoryApplication extends window.HTMLElement {
     this.setGrid(this._columns, this._rows)
     this.shadowRoot.querySelector('.memoryGame').style.display = 'grid'
     this.shadowRoot.querySelector('.memoryGrid').style.display = 'grid'
-    // console.log(gridSize)
 
     this.shadowRoot.querySelector('.timerAndClicks').style.display = 'flex'
 
-    // this.shadowRoot.querySelector('.memoryGrid').firstElementChild.setAttribute('focused', true)
     this.shadowRoot.querySelector('.memoryGrid').firstElementChild.focus()
   }
 
   /**
+   * Set the grid size
    *
-   *
-   * @param {*} columns
-   * @param {*} rows
+   * @param {int} columns the number of columns
+   * @param {int} rows the number of rows
    * @memberof MemoryApplication
    */
   setGrid (columns, rows) {
@@ -428,7 +415,7 @@ export default class MemoryApplication extends window.HTMLElement {
   }
 
   /**
-   *
+   * Put images in array
    *
    * @param {*} images
    * @memberof MemoryApplication
@@ -439,7 +426,7 @@ export default class MemoryApplication extends window.HTMLElement {
   }
 
   /**
-   *
+   * Shuffle the images
    *
    * @memberof MemoryApplication
    */
@@ -453,23 +440,7 @@ export default class MemoryApplication extends window.HTMLElement {
   }
 
   /**
-   *
-   *
-   * @memberof MemoryApplication
-   */
-  displayMemoryGrid () {
-    this._imageArray.forEach(element => {
-      if (element !== '0.png') {
-        const img = document.createElement('img')
-        img.setAttribute('src', '/image/' + element)
-        console.log(img)
-        this.shadowRoot.querySelector('.memoryGrid').appendChild(img)
-      }
-    })
-  }
-
-  /**
-   *
+   * Display the memory grid, with the bricks
    *
    * @memberof MemoryApplication
    */
@@ -479,80 +450,63 @@ export default class MemoryApplication extends window.HTMLElement {
       const brick = document.createElement('memory-brick')
       brick.setAttribute('img', element)
       brick.id = itr++
-      console.log(brick)
       this.shadowRoot.querySelector('.memoryGrid').appendChild(brick)
     })
-
-    // console.log(this._startTime)
   }
 
   /**
+   * Click brick event
    *
-   *
-   * @param {*} e
+   * @param {Event} e the event
    * @memberof MemoryApplication
    */
   clickBrick (e) {
     e.stopPropagation()
     e.cancelBubble = true
+
     if (this._revealed.size < 2 && !this._revealed.get(e.detail.id)) {
       if (!this._revealed.delete(e.detail.id)) {
         if (!e.detail.matched) {
           this.incrementClicks()
         }
 
-        // console.log(this._nbrOfClicks)
         this.shadowRoot.getElementById(e.detail.id).toggleView(e)
         this._revealed.set(e.detail.id, e.detail.img)
+
+        // if 2 bricks clicked, check match
         if (this._revealed.size === 2) {
           this.checkMatch()
-          console.log('jadå', this._revealed.keys())
         }
       }
-    } else {
-      // this.shadowRoot.getElementById(e.detail.id).toggleView(e)
-      // this._revealed.delete(e.detail.id)
-      // this.checkMatch()
-      // this._revealed.clear()
     }
   }
 
   /**
+   * Check if turned bricks are matched
    *
-   *
-   * @returns
+   * @returns {boolean} true if matched, false otherwise
    * @memberof MemoryApplication
    */
   checkMatch () {
     const arr = Array.from(this._revealed.values())
-    console.log('arg', arr)
+
     if (arr[0] === arr[1]) {
-      console.log(arr[0])
-      console.log('WIN')
-      console.log('hallå')
       this._imageArray = this._imageArray.filter(img => img !== arr[0])
       this.clearGrid(true)
-      console.log('img arrrrrr', this._imageArray)
+
+      // if all images turned, game over
       if (this._imageArray.length === 0) {
-        console.log('BIG WIN')
         this.gameOver()
       }
-      /* this._matches--
-      if (this._matches <= 0) {
-        console.log('BIG WIN')
-      } */
       return true
     } else {
-      console.log('uhoh')
-      console.log('double WTF', this._revealed)
-      // setTimeout(this.clearGrid, 2000)
       this.clearGrid(false)
       return false
     }
   }
 
   /**
-   *
+   * Increment the number of clicks
    *
    * @memberof MemoryApplication
    */
@@ -562,7 +516,7 @@ export default class MemoryApplication extends window.HTMLElement {
   }
 
   /**
-   *
+   * Test timer
    *
    * @memberof MemoryApplication
    */
@@ -572,7 +526,7 @@ export default class MemoryApplication extends window.HTMLElement {
   }
 
   /**
-   *
+   * Game over, display proper stuff, calculate score etc
    *
    * @memberof MemoryApplication
    */
@@ -585,19 +539,18 @@ export default class MemoryApplication extends window.HTMLElement {
 
     this._endTime = Date.now()
     const playTime = this._endTime - this._startTime
-    console.log('sec', playTime / 1000)
+
     const score = Math.floor(this.calculateScore(playTime, this._nbrOfClicks))
-    console.log('score:', score)
+
     this.shadowRoot.querySelector('.endScore').innerText = score
     this.shadowRoot.querySelector('.totalTime').innerText = playTime / 1000
     this.shadowRoot.querySelector('.totalClicks').innerText = this._nbrOfClicks
 
     this._over = true
-    console.log(this)
   }
 
   /**
-   *
+   * Reset the game
    *
    * @memberof MemoryApplication
    */
@@ -611,11 +564,11 @@ export default class MemoryApplication extends window.HTMLElement {
   }
 
   /**
+   * Calculate the score
    *
-   *
-   * @param {*} playTime
-   * @param {*} clicks
-   * @returns
+   * @param {int} playTime the playtime
+   * @param {int} clicks the number of clicks
+   * @returns {int} the score
    * @memberof MemoryApplication
    */
   calculateScore (playTime, clicks) {
@@ -626,26 +579,26 @@ export default class MemoryApplication extends window.HTMLElement {
   }
 
   /**
+   * Save a new highscore
    *
-   *
-   * @param {*} e
+   * @param {Event} e the event
    * @memberof MemoryApplication
    */
   saveScore (e) {
     this.shadowRoot.querySelector('.result').style.display = 'none'
     const name = this.shadowRoot.getElementById('name').value
     const scores = JSON.parse(window.localStorage.getItem('highScore') || '[]')
-    console.log(scores)
+
     const scoreItem = { userName: name, score: this._currentScore }
     scores.push(scoreItem)
     window.localStorage.setItem('highScore', JSON.stringify(scores))
-    console.log(name)
+
     this.getHighScores()
     this.populateScores()
   }
 
   /**
-   *
+   * Get the highscores, sorted, top 10
    *
    * @memberof MemoryApplication
    */
@@ -653,11 +606,10 @@ export default class MemoryApplication extends window.HTMLElement {
     const scores = JSON.parse(window.localStorage.getItem('highScore') || '[]')
     const updatedScores = scores.sort((a, b) => b.score - a.score).slice(0, 10)
     window.localStorage.setItem('highScore', JSON.stringify(updatedScores))
-    console.log(updatedScores)
   }
 
   /**
-   *
+   * Populate high score list
    *
    * @memberof MemoryApplication
    */
@@ -673,9 +625,9 @@ export default class MemoryApplication extends window.HTMLElement {
   }
 
   /**
+   * "Clear the grid" by hiding matched bricks, or turning unmatched bricks
    *
-   *
-   * @param {*} match
+   * @param {boolean} match boolean, true if bricks are matched, false otherwise
    * @memberof MemoryApplication
    */
   async clearGrid (match) {
@@ -683,15 +635,10 @@ export default class MemoryApplication extends window.HTMLElement {
     if (match) {
       await this.sleep(500)
       arr.forEach(el => {
-        console.log('BRICK', el)
         this.shadowRoot.getElementById(el).match()
         this._revealed.clear()
-        console.log(el)
-        // this.focusNext(parseInt(el) + 1)
       })
     } else {
-      console.log('wtf', this._revealed)
-      console.log(this._revealed.keys())
       await this.sleep(1000)
       arr.forEach(el => {
         this.shadowRoot.getElementById(el).toggleView()
@@ -701,10 +648,10 @@ export default class MemoryApplication extends window.HTMLElement {
   }
 
   /**
+   * Help method for delay
    *
-   *
-   * @param {*} ms
-   * @returns
+   * @param {int} ms delay milliseconds
+   * @returns {Promise} the timeout
    * @memberof MemoryApplication
    */
   sleep (ms) {
@@ -712,23 +659,18 @@ export default class MemoryApplication extends window.HTMLElement {
   }
 
   /**
+   * Focus the next available brick
    *
-   *
-   * @param {*} id
+   * @param {int} id id of current/last brick
    * @memberof MemoryApplication
    */
   focusNext (id) {
     if (id === this._columns * this._rows) {
       id = 0
     }
-    console.log(this.shadowRoot.getElementById(id).matched)
-    console.log(id)
     if (!this.shadowRoot.getElementById(id).matched) {
-      console.log(this.shadowRoot.getElementById(id).matched)
       this.shadowRoot.getElementById(id).focus()
     } else if (!this._over) {
-      console.log(this.shadowRoot.getElementById(id).matched)
-      console.log('wtf')
       this.focusNext(id)
     }
   }
