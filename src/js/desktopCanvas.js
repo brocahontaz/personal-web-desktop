@@ -55,7 +55,7 @@ let jumps = 0
 let row = 0
 
 /**
- *
+ * Webcomponent module for the desktop canvas.
  *
  * @export
  * @class Desktop
